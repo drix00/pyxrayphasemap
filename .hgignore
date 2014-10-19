@@ -1,0 +1,5 @@
+syntax: glob
+dist
+pyxrayphasemap.egg-info
+build
+*.pyc
