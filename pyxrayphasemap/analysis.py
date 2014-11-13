@@ -120,8 +120,8 @@ class PhaseAnalysis(object):
 
     def _readDataFromTSVFile(self, filepath):
         text = open(filepath,"rb").read()
-        lines = text.split('\r')
-        numberColumns = len(lines[0].split("\t"))
+        lines = text.split(b'\r')
+        numberColumns = len(lines[0].split(b'\t'))
         numberRows = len(lines) - 1
         data = np.loadtxt(open(filepath,"rb"))
         data.shape = (numberRows, numberColumns)

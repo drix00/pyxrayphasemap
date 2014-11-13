@@ -32,7 +32,7 @@ class Phase(object):
         self._elementData = elementData
 
     def getData(self, color, dilationErosion=False):
-        width, height = self._elementData.values()[0].shape
+        width, height = list(self._elementData.values())[0].shape
         rgb_R = np.zeros((width, height), dtype=np.float32)
         rgb_G = np.zeros((width, height), dtype=np.float32)
         rgb_B = np.zeros((width, height), dtype=np.float32)
