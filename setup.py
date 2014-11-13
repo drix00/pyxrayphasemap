@@ -57,7 +57,7 @@ readmeFilepath = os.path.join(os.path.dirname(__file__), 'README.rst')
 long_description = open(readmeFilepath).read() + '\n\n'
 
 setup(name="pyxrayphasemap",
-      version='0.1',
+      version='0.1.1',
       description="Create phase map from x-ray elemental maps.",
 #      long_description=long_description,
       author="Hendrix Demers",
@@ -88,7 +88,3 @@ setup(name="pyxrayphasemap",
 
       cmdclass={'zip_testdata': TestDataCommand},
 )
-
-if __name__ == '__main__': #pragma: no cover
-    import pyHendrixDemersTools.Runner as Runner
-    Runner.Runner().run(runFunction=None)

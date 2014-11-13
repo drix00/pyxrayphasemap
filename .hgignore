@@ -3,3 +3,5 @@ dist
 pyxrayphasemap.egg-info
 build
 *.pyc
+coverage-*
+nose-*
