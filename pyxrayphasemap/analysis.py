@@ -41,10 +41,10 @@ class PhaseAnalysis(object):
         self.width = None
         self.height = None
 
-    def readElementData(self, dataPath):
-        self._elementData, self.width, self.height = self._readProjectFile(self.elements, self.sampleName, self.dataType, dataPath)
+    def readElementData(self, dataPath, filenames=None):
+        self._elementData, self.width, self.height = self._readProjectFile(self.elements, self.sampleName, self.dataType, dataPath, filenames)
 
-    def _readProjectFile(self, elements, sampleName, dataType, dataPath):
+    def _readProjectFile(self, elements, sampleName, dataType, dataPath, filenames):
         filename = "PhaseAnalysis_sample%s.hdf5" % (sampleName)
         filepath = os.path.join(dataPath, filename)
 
@@ -66,19 +66,23 @@ class PhaseAnalysis(object):
 
         for element in elements:
             if element not in dataTypeGroup:
-                filename= r'%s-%s_%s.%s' % (sampleName, dataType, element, self.dataExtension)
-                filepath = os.path.join(dataPath, filename)
-
-                if not os.path.isfile(filepath) and dataType == DATA_TYPE_WEIGHT_NORMALIZED:
-                    filename= r'%s_%s_%s.%s' % (sampleName, "mass_norm", element, self.dataExtension)
+                if filenames is None:
+                    filename= r'%s-%s_%s.%s' % (sampleName, dataType, element, self.dataExtension)
                     filepath = os.path.join(dataPath, filename)
 
-                if not os.path.isfile(filepath) and dataType == DATA_TYPE_WEIGHT_NORMALIZED:
-                    filename= r'%s-%s_%s.%s' % (sampleName, "w% norm", element, self.dataExtension)
-                    filepath = os.path.join(dataPath, filename)
+                    if not os.path.isfile(filepath) and dataType == DATA_TYPE_WEIGHT_NORMALIZED:
+                        filename= r'%s_%s_%s.%s' % (sampleName, "mass_norm", element, self.dataExtension)
+                        filepath = os.path.join(dataPath, filename)
 
-                if not os.path.isfile(filepath) and dataType == DATA_TYPE_WEIGHT_NORMALIZED:
-                    filename= r'%s-%s_%s.%s' % (sampleName, "w%-norm", element, self.dataExtension)
+                    if not os.path.isfile(filepath) and dataType == DATA_TYPE_WEIGHT_NORMALIZED:
+                        filename= r'%s-%s_%s.%s' % (sampleName, "w% norm", element, self.dataExtension)
+                        filepath = os.path.join(dataPath, filename)
+
+                    if not os.path.isfile(filepath) and dataType == DATA_TYPE_WEIGHT_NORMALIZED:
+                        filename= r'%s-%s_%s.%s' % (sampleName, "w%-norm", element, self.dataExtension)
+                        filepath = os.path.join(dataPath, filename)
+                else:
+                    filename= filenames[element]
                     filepath = os.path.join(dataPath, filename)
 
                 try:
@@ -105,11 +109,22 @@ class PhaseAnalysis(object):
             return self._readDataFromImageFile(filepath)
         elif extension == ".txt":
             return self._readDataFromTextFile(filepath)
+        elif extension == ".tsv":
+            return self._readDataFromTSVFile(filepath)
 
         logging.error("Unkown extension %s for filepath %s", extension, filepath)
 
     def _readDataFromTextFile(self, filepath):
         data = np.loadtxt(open(filepath,"rb"),delimiter=";")
+        return data
+
+    def _readDataFromTSVFile(self, filepath):
+        text = open(filepath,"rb").read()
+        lines = text.split('\r')
+        numberColumns = len(lines[0].split("\t"))
+        numberRows = len(lines) - 1
+        data = np.loadtxt(open(filepath,"rb"))
+        data.shape = (numberRows, numberColumns)
         return data
 
     def _readDataFromImageFile(self, Filename):

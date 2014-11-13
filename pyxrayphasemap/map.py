@@ -15,6 +15,7 @@ __license__ = ""
 
 # Standard library modules.
 import logging
+import os.path
 
 # Third party modules.
 import numpy as np
@@ -160,6 +161,14 @@ class PhaseMap(object):
         labels = ["Overlap phases"]
         plt.figlegend(patches, labels, 'upper right')
         plt.savefig(filepath)
+
+def savePhaseOnly(phaseMap, phase, graphicPath, color):
+    phaseImage = PhaseMap(phaseMap.width, phaseMap.height)
+
+    phaseImage.addPhase(phase, color)
+    filename= r'%s_%s_%s.png' % (phaseMap.sampleName, phaseMap.dataType, phase.name)
+    filepath = os.path.join(graphicPath, filename)
+    phaseImage.saveImage(filepath)
 
 if __name__ == '__main__': #pragma: no cover
     import pyHendrixDemersTools.Runner as Runner
