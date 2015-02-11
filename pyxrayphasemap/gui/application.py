@@ -14,6 +14,11 @@ __copyright__ = "Copyright (c) 2014 Hendrix Demers"
 __license__ = ""
 
 # Standard library modules.
+import logging
+from logging.handlers import RotatingFileHandler
+import os.path
+import sys
+
 
 # Third party modules.
 from PySide import QtCore, QtGui
@@ -29,10 +34,18 @@ from matplotlib.figure import Figure
 # Project modules
 
 # Globals and constants variables.
+APPLICATION_NAME = "pyXRayPhaseMap"
+ORGANIZATION_NAME = "McGill University"
+LOG_FILENAME = APPLICATION_NAME + '.log'
+
+MODULE_LOGGER = logging.getLogger(APPLICATION_NAME)
 
 class MainWindow(QtGui.QMainWindow):
     NumGridRows = 3
     def __init__(self):
+        self.logger = logging.getLogger(APPLICATION_NAME +'.MainWindow')
+        self.logger.info("MainWindow.__init__")
+
         super(MainWindow, self).__init__()
 
         self.curFile = ''
@@ -88,6 +101,8 @@ class MainWindow(QtGui.QMainWindow):
         self.setCentralWidget(self.mainGroupBox)
 
     def createGridGroupBox(self):
+        self.logger.info("MainWindow.createGridGroupBox")
+
         self.gridGroupBox = QtGui.QGroupBox("Grid layout")
         layout = QtGui.QGridLayout()
 
@@ -106,6 +121,8 @@ class MainWindow(QtGui.QMainWindow):
         self.gridGroupBox.setLayout(layout)
 
     def closeEvent(self, event):
+        self.logger.info("MainWindow.closeEvent")
+
         if self.maybeSave():
             self.writeSettings()
             event.accept()
@@ -113,39 +130,53 @@ class MainWindow(QtGui.QMainWindow):
             event.ignore()
 
     def newFile(self):
+        self.logger.info("MainWindow.newFile")
+
         if self.maybeSave():
             self.textEdit.clear()
             self.setCurrentFile('')
 
     def open(self):
+        self.logger.info("MainWindow.open")
+
         if self.maybeSave():
-            fileName, filtr = QtGui.QFileDialog.getOpenFileName(self)
+            fileName, _filtr = QtGui.QFileDialog.getOpenFileName(self)
             if fileName:
                 self.loadFile(fileName)
 
     def save(self):
+        self.logger.info("MainWindow.save")
+
         if self.curFile:
             return self.saveFile(self.curFile)
 
         return self.saveAs()
 
     def saveAs(self):
-        fileName, filtr = QtGui.QFileDialog.getSaveFileName(self)
+        self.logger.info("MainWindow.saveAs")
+
+        fileName, _filtr = QtGui.QFileDialog.getSaveFileName(self)
         if fileName:
             return self.saveFile(fileName)
 
         return False
 
     def about(self):
+        self.logger.info("MainWindow.about")
+
         QtGui.QMessageBox.about(self, "About Application",
                 "The <b>Application</b> example demonstrates how to write "
                 "modern GUI applications using Qt, with a menu bar, "
                 "toolbars, and a status bar.")
 
     def documentWasModified(self):
+        self.logger.info("MainWindow.documentWasModified")
+
         self.setWindowModified(self.textEdit.document().isModified())
 
     def createActions(self):
+        self.logger.info("MainWindow.createActions")
+
         self.newAct = QtGui.QAction(QtGui.QIcon(':/images/new.png'), "&New",
                 self, shortcut=QtGui.QKeySequence.New,
                 statusTip="Create a new file", triggered=self.newFile)
@@ -195,6 +226,8 @@ class MainWindow(QtGui.QMainWindow):
         self.textEdit.copyAvailable.connect(self.copyAct.setEnabled)
 
     def createMenus(self):
+        self.logger.info("MainWindow.createMenus")
+
         self.fileMenu = self.menuBar().addMenu("&File")
         self.fileMenu.addAction(self.newAct)
         self.fileMenu.addAction(self.openAct)
@@ -215,6 +248,8 @@ class MainWindow(QtGui.QMainWindow):
         self.helpMenu.addAction(self.aboutQtAct)
 
     def createToolBars(self):
+        self.logger.info("MainWindow.createToolBars")
+
         self.fileToolBar = self.addToolBar("File")
         self.fileToolBar.addAction(self.newAct)
         self.fileToolBar.addAction(self.openAct)
@@ -226,21 +261,29 @@ class MainWindow(QtGui.QMainWindow):
         self.editToolBar.addAction(self.pasteAct)
 
     def createStatusBar(self):
+        self.logger.info("MainWindow.createStatusBar")
+
         self.statusBar().showMessage("Ready")
 
     def readSettings(self):
-        settings = QtCore.QSettings("Trolltech", "Application Example")
+        self.logger.info("MainWindow.readSettings")
+
+        settings = QtCore.QSettings(ORGANIZATION_NAME, APPLICATION_NAME)
         pos = settings.value("pos", QtCore.QPoint(200, 200))
         size = settings.value("size", QtCore.QSize(400, 400))
         self.resize(size)
         self.move(pos)
 
     def writeSettings(self):
-        settings = QtCore.QSettings("Trolltech", "Application Example")
+        self.logger.info("MainWindow.writeSettings")
+
+        settings = QtCore.QSettings(ORGANIZATION_NAME, APPLICATION_NAME)
         settings.setValue("pos", self.pos())
         settings.setValue("size", self.size())
 
     def maybeSave(self):
+        self.logger.info("MainWindow.maybeSave")
+
         if self.textEdit.document().isModified():
             ret = QtGui.QMessageBox.warning(self, "Application",
                     "The document has been modified.\nDo you want to save "
@@ -254,6 +297,8 @@ class MainWindow(QtGui.QMainWindow):
         return True
 
     def loadFile(self, fileName):
+        self.logger.info("MainWindow.loadFile")
+
         file = QtCore.QFile(fileName)
         if not file.open(QtCore.QFile.ReadOnly | QtCore.QFile.Text):
             QtGui.QMessageBox.warning(self, "Application",
@@ -269,6 +314,8 @@ class MainWindow(QtGui.QMainWindow):
         self.statusBar().showMessage("File loaded", 2000)
 
     def saveFile(self, fileName):
+        self.logger.info("MainWindow.saveFile")
+
         file = QtCore.QFile(fileName)
         if not file.open(QtCore.QFile.WriteOnly | QtCore.QFile.Text):
             QtGui.QMessageBox.warning(self, "Application",
@@ -285,6 +332,8 @@ class MainWindow(QtGui.QMainWindow):
         return True
 
     def setCurrentFile(self, fileName):
+        self.logger.info("MainWindow.setCurrentFile")
+
         self.curFile = fileName
         self.textEdit.document().setModified(False)
         self.setWindowModified(False)
@@ -297,15 +346,47 @@ class MainWindow(QtGui.QMainWindow):
         self.setWindowTitle("%s[*] - Application" % shownName)
 
     def strippedName(self, fullFileName):
+        self.logger.info("MainWindow.strippedName")
+
         return QtCore.QFileInfo(fullFileName).fileName()
 
-def run():
-    import sys
+def createApplication():
+    application = QtGui.QApplication(sys.argv)
+    application.setApplicationName(APPLICATION_NAME)
+    application.setOrganizationName(ORGANIZATION_NAME)
 
-    app = QtGui.QApplication(sys.argv)
+    return application
+
+def startLogging():
+    dataLocation = QtGui.QDesktopServices.storageLocation(QtGui.QDesktopServices.DataLocation)
+    if not os.path.isdir(dataLocation):
+        os.makedirs(dataLocation)
+
+    logFilepath = os.path.join(dataLocation, LOG_FILENAME)
+    fh = RotatingFileHandler(logFilepath, maxBytes=1024*30, backupCount=10)
+    MODULE_LOGGER.setLevel(logging.DEBUG)
+
+    # create formatter and add it to the handlers
+    formatter = logging.Formatter('%(asctime)s : %(name)s : %(levelname)s : %(message)s')
+    fh.setFormatter(formatter)
+    MODULE_LOGGER.addHandler(fh)
+    MODULE_LOGGER.info("startLogging")
+
+    MODULE_LOGGER.debug("Data location: %s", dataLocation)
+    MODULE_LOGGER.debug("Applications location: %s", QtGui.QDesktopServices.storageLocation(QtGui.QDesktopServices.ApplicationsLocation))
+    MODULE_LOGGER.debug("Home location: %s", QtGui.QDesktopServices.storageLocation(QtGui.QDesktopServices.HomeLocation))
+    MODULE_LOGGER.debug("Temp location: %s", QtGui.QDesktopServices.storageLocation(QtGui.QDesktopServices.TempLocation))
+    MODULE_LOGGER.debug("Cache location: %s", QtGui.QDesktopServices.storageLocation(QtGui.QDesktopServices.CacheLocation))
+
+def startMainWindow():
     mainWin = MainWindow()
     mainWin.show()
-    sys.exit(app.exec_())
+
+def run():
+    application = createApplication()
+    startLogging()
+    startMainWindow()
+    sys.exit(application.exec_())
 
 if __name__ == '__main__': #pragma: no cover
     run()
