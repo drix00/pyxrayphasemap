@@ -30,6 +30,8 @@ import matplotlib.pyplot as plt
 # Globals and constants variables.
 DATA_TYPE_ATOMIC_NORMALIZED = "atom norm"
 DATA_TYPE_WEIGHT_NORMALIZED = "weight norm"
+DATA_TYPE_INTENSITY_DECONVOLUTION = "Intensity Deconvolution"
+DATA_TYPE_FRATIO = "f-ratio"
 
 class PhaseAnalysis(object):
     def __init__(self):
@@ -40,14 +42,19 @@ class PhaseAnalysis(object):
         self.dataExtension = None
         self.width = None
         self.height = None
+        self.h5filepath = None
 
     def readElementData(self, dataPath, filenames=None):
-        self._elementData, self.width, self.height = self._readProjectFile(self.elements, self.sampleName, self.dataType, dataPath, filenames)
+        self.width, self.height = self._readProjectFile(self.elements, self.sampleName, self.dataType, dataPath, filenames)
 
     def _readProjectFile(self, elements, sampleName, dataType, dataPath, filenames):
         filename = "PhaseAnalysis_sample%s.hdf5" % (sampleName)
         filepath = os.path.join(dataPath, filename)
 
+        if not os.path.exists(dataPath):
+            os.makedirs(dataPath)
+
+        self.h5filepath = filepath
         if self.overwrite:
             h5file = h5py.File(filepath, 'w')
         else:
@@ -101,7 +108,7 @@ class PhaseAnalysis(object):
 
         h5file.close()
 
-        return elementData, w, h
+        return w, h
 
     def _readData(self, filepath):
         _basename, extension = os.path.splitext(filepath)
@@ -133,21 +140,65 @@ class PhaseAnalysis(object):
         return arr
 
     def saveElementImages(self, graphicPath, basename):
+        with h5py.File(self.h5filepath, 'r') as h5file:
+            elementData = self._getData(h5file, self.dataType)
 
-        for symbol in self.elementData:
-            data = self.elementData[symbol]
-            plt.figure()
-            title = "%s %s" % (basename, symbol)
-            plt.title(title)
+            for symbol in elementData:
+                data = elementData[symbol]
+                plt.figure()
+                title = "%s %s" % (basename, symbol)
+                plt.title(title)
 
-            plt.imshow(data, aspect='equal')
-            plt.axis('off')
-            plt.colorbar()
+                plt.imshow(data, aspect='equal')
+                plt.axis('off')
+                plt.colorbar()
 
-            filename = "%s_%s.png" % (basename, symbol)
-            filepath = os.path.join(graphicPath, filename)
-            plt.savefig(filepath)
-            plt.close()
+                filename = "%s_%s.png" % (basename, symbol)
+                filepath = os.path.join(graphicPath, filename)
+                plt.savefig(filepath)
+                plt.close()
+
+    def computeFratio(self, inputDatatype):
+        outputDatatype = DATA_TYPE_FRATIO
+
+        with h5py.File(self.h5filepath, 'a') as h5file:
+            if outputDatatype not in h5file:
+                groupName = "/%s" % (outputDatatype)
+                dataTypeGroup = h5file.create_group(groupName)
+            else:
+                dataTypeGroup = h5file[outputDatatype]
+
+            elementData = self._getData(h5file, inputDatatype)
+
+            totalIntensity = np.zeros_like(elementData[self.elements[0]])
+
+            for symbol in self.elements:
+                totalIntensity += elementData[symbol]
+
+            logging.info(np.min(totalIntensity))
+            logging.info(np.max(totalIntensity))
+
+            for symbol in self.elements:
+                if symbol not in dataTypeGroup:
+                    dset = dataTypeGroup.create_dataset(symbol, totalIntensity.shape, dtype=np.float32)
+                else:
+                    dset = dataTypeGroup[symbol]
+                dset[:,:] = elementData[symbol] / totalIntensity
+
+    def getElementData(self, datatype):
+        with h5py.File(self.h5filepath, 'r') as h5file:
+            elementData = self._getData(h5file, datatype)
+
+        return elementData
+
+    def _getData(self, h5file, datatype):
+        dataTypeGroup = h5file[datatype]
+
+        elementData = {}
+        for symbol in self.elements:
+            elementData[symbol] = dataTypeGroup[symbol][...]
+
+        return elementData
 
     @property
     def elements(self):
@@ -199,8 +250,11 @@ class PhaseAnalysis(object):
         self._height = height
 
     @property
-    def elementData(self):
-        return self._elementData
+    def h5filepath(self):
+        return self._h5filepath
+    @h5filepath.setter
+    def h5filepath(self, h5filepath):
+        self._h5filepath = h5filepath
 
 if __name__ == '__main__': #pragma: no cover
     import pyHendrixDemersTools.Runner as Runner
