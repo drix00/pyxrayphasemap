@@ -32,6 +32,11 @@ DATA_TYPE_ATOMIC_NORMALIZED = "atom norm"
 DATA_TYPE_WEIGHT_NORMALIZED = "weight norm"
 DATA_TYPE_INTENSITY_DECONVOLUTION = "Intensity Deconvolution"
 DATA_TYPE_FRATIO = "f-ratio"
+DATA_TYPE_SE = "SE"
+DATA_TYPE_BSE = "BSE"
+DATA_TYPE_TOTAL_INTENSITY = "Total intensity"
+
+GROUP_MICROGRAPH = "micrograph"
 
 class PhaseAnalysis(object):
     def __init__(self):
@@ -47,18 +52,39 @@ class PhaseAnalysis(object):
     def readElementData(self, dataPath, filenames=None):
         self.width, self.height = self._readProjectFile(self.elements, self.sampleName, self.dataType, dataPath, filenames)
 
-    def _readProjectFile(self, elements, sampleName, dataType, dataPath, filenames):
-        filename = "PhaseAnalysis_sample%s.hdf5" % (sampleName)
+    def readMicrographData(self, dataPath, sampleName, filename, micrographType):
         filepath = os.path.join(dataPath, filename)
+        data = self._readData(filepath)
+        logging.info(np.min(data))
+        logging.info(np.max(data))
 
-        if not os.path.exists(dataPath):
-            os.makedirs(dataPath)
+        data = (data - 26.25)  / (889.50 - 26.25)
 
-        self.h5filepath = filepath
-        if self.overwrite:
-            h5file = h5py.File(filepath, 'w')
+        h5file = self._open_hdf5_file(dataPath, sampleName)
+
+        if GROUP_MICROGRAPH not in h5file:
+            groupName = "/%s" % (GROUP_MICROGRAPH)
+            dataTypeGroup = h5file.create_group(groupName)
         else:
-            h5file = h5py.File(filepath, 'a')
+            dataTypeGroup = h5file[GROUP_MICROGRAPH]
+
+        logging.info(dataTypeGroup.name)
+        logging.info(dataTypeGroup.parent)
+        if micrographType not in dataTypeGroup:
+            dset = dataTypeGroup.create_dataset(micrographType, data.shape, dtype=np.float32)
+            dset[:,:] = data
+            logging.debug(dset)
+            h5file.flush()
+        else:
+            dset = dataTypeGroup[micrographType]
+            dset[:,:] = data
+            logging.debug(dset)
+            h5file.flush()
+
+        h5file.close()
+
+    def _readProjectFile(self, elements, sampleName, dataType, dataPath, filenames):
+        h5file = self._open_hdf5_file(dataPath, sampleName)
 
         if dataType not in h5file:
             groupName = "/%s" % (dataType)
@@ -110,6 +136,21 @@ class PhaseAnalysis(object):
 
         return w, h
 
+    def _open_hdf5_file(self, dataPath, sampleName):
+        filename = "PhaseAnalysis_sample%s.hdf5" % (sampleName)
+        filepath = os.path.join(dataPath, filename)
+
+        if not os.path.exists(dataPath):
+            os.makedirs(dataPath)
+
+        self.h5filepath = filepath
+        if self.overwrite:
+            h5file = h5py.File(filepath, 'w')
+        else:
+            h5file = h5py.File(filepath, 'a')
+
+        return h5file
+
     def _readData(self, filepath):
         _basename, extension = os.path.splitext(filepath)
         if extension == ".tif":
@@ -158,6 +199,25 @@ class PhaseAnalysis(object):
                 plt.savefig(filepath)
                 plt.close()
 
+    def saveMicrographs(self, graphicPath, basename):
+        with h5py.File(self.h5filepath, 'r') as h5file:
+            dataTypeGroup = h5file[GROUP_MICROGRAPH]
+
+            for micrographType in dataTypeGroup:
+                data = dataTypeGroup[micrographType]
+                plt.figure()
+                title = "%s %s" % (basename, micrographType)
+                plt.title(title)
+
+                plt.imshow(data, aspect='equal')
+                plt.axis('off')
+                plt.colorbar()
+
+                filename = "%s_%s.png" % (basename, micrographType)
+                filepath = os.path.join(graphicPath, filename)
+                plt.savefig(filepath)
+                plt.close()
+
     def computeFratio(self, inputDatatype):
         outputDatatype = DATA_TYPE_FRATIO
 
@@ -184,6 +244,34 @@ class PhaseAnalysis(object):
                 else:
                     dset = dataTypeGroup[symbol]
                 dset[:,:] = elementData[symbol] / totalIntensity
+
+    def computeTotalIntensity(self, inputDatatype):
+        outputDatatype = GROUP_MICROGRAPH
+
+        with h5py.File(self.h5filepath, 'a') as h5file:
+            if outputDatatype not in h5file:
+                groupName = "/%s" % (outputDatatype)
+                dataTypeGroup = h5file.create_group(groupName)
+            else:
+                dataTypeGroup = h5file[outputDatatype]
+
+            elementData = self._getData(h5file, inputDatatype)
+
+            totalIntensity = np.zeros_like(elementData[self.elements[0]])
+
+            for symbol in self.elements:
+                totalIntensity += elementData[symbol]
+
+            logging.info(np.min(totalIntensity))
+            logging.info(np.max(totalIntensity))
+
+            totalIntensity = (totalIntensity - np.min(totalIntensity))  / (np.max(totalIntensity) - np.min(totalIntensity))
+
+            if DATA_TYPE_TOTAL_INTENSITY not in dataTypeGroup:
+                dset = dataTypeGroup.create_dataset(DATA_TYPE_TOTAL_INTENSITY, totalIntensity.shape, dtype=np.float32)
+            else:
+                dset = dataTypeGroup[DATA_TYPE_TOTAL_INTENSITY]
+            dset[:,:] = totalIntensity
 
     def getElementData(self, datatype):
         with h5py.File(self.h5filepath, 'r') as h5file:
