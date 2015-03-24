@@ -378,14 +378,12 @@ def startLogging():
     MODULE_LOGGER.debug("Temp location: %s", QtGui.QDesktopServices.storageLocation(QtGui.QDesktopServices.TempLocation))
     MODULE_LOGGER.debug("Cache location: %s", QtGui.QDesktopServices.storageLocation(QtGui.QDesktopServices.CacheLocation))
 
-def startMainWindow():
-    mainWin = MainWindow()
-    mainWin.show()
-
 def run():
+    # Note application and mainWin have to be declared in the same method.
     application = createApplication()
     startLogging()
-    startMainWindow()
+    mainWin = MainWindow()
+    mainWin.show()
     sys.exit(application.exec_())
 
 if __name__ == '__main__': #pragma: no cover
