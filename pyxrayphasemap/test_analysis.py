@@ -9,20 +9,19 @@ Tests for the module `analysis`.
 # Script information for the file.
 __author__ = "Hendrix Demers (hendrix.demers@mail.mcgill.ca)"
 __version__ = "0.1"
-__date__ = "Jan 19, 2015"
+__date__ = "Mar 26, 2015"
 __copyright__ = "Copyright (c) 2015 Hendrix Demers"
 __license__ = "GPL 3"
 
 # Standard library modules.
 import unittest
-import logging
 
 # Third party modules.
 
 # Local modules.
 
 # Project modules
-import analysis
+import pyxrayphasemap.analysis
 
 # Globals and constants variables.
 
@@ -51,11 +50,10 @@ class Testanalysis(unittest.TestCase):
         """
 
         #self.fail("Test if the testcase is working.")
-        self.assert_(True)
 
 if __name__ == '__main__':  #pragma: no cover
     import nose
     import sys
     argv = sys.argv
-    argv.append("--cover-package=analysis")
+    argv.append("--cover-package=pyxrayphasemap.analysis")
     nose.runmodule(argv=argv)
