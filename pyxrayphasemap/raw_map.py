@@ -44,26 +44,27 @@ def run():
     #energy, pixelSpectrum = rawMap.getSpectrum(200, 200)
     #plt.plot(energy, pixelSpectrum)
 
-    energy, maximum_pixelSpectrum = rawMap.getMaximumPixelSpectrum()
-    plt.plot(energy, maximum_pixelSpectrum)
-    pixels = rawMap.getMaximumPixelSpectrumPixels()
-    print(pixels[218:226])
+#     energy, maximum_pixelSpectrum = rawMap.getMaximumPixelSpectrum()
+#     plt.plot(energy, maximum_pixelSpectrum)
+#     pixels = rawMap.getMaximumPixelSpectrumPixels()
+#     print(pixels[218:226])
 
     #energy, maximum_pixelSpectrum = rawMap.getMaximumPixelSpectrum2()
     #plt.plot(energy, maximum_pixelSpectrum)
 
-    plt.figure()
-    for ix, iy in pixels[218:226]:
-        energy, pixelSpectrum = rawMap.getSpectrum(ix, iy)
-        plt.plot(energy, pixelSpectrum)
+#     plt.figure()
+#     for ix, iy in pixels[218:226]:
+#         energy, pixelSpectrum = rawMap.getSpectrum(ix, iy)
+#         plt.plot(energy, pixelSpectrum)
 
     #plt.figure()
     #energy, total_spectrum = rawMap.getTotalSpectrum()
     #plt.plot(energy, total_spectrum)
 
-    #plt.figure()
-    #image = rawMap.getTotalIntensityImage()
-    #plt.imshow(image)
+    plt.figure()
+    image = rawMap.getTotalIntensityImage()
+    cm = plt.cm.get_cmap('hot')
+    plt.imshow(image, aspect='equal', cmap=cm)
 
 if __name__ == '__main__':  #pragma: no cover
     run()
