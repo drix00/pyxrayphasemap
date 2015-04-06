@@ -25,7 +25,6 @@ from PySide import QtCore, QtGui
 import matplotlib
 matplotlib.use('Qt4Agg')
 matplotlib.rcParams['backend.qt4']='PySide'
-
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
@@ -43,7 +42,7 @@ MODULE_LOGGER = logging.getLogger(APPLICATION_NAME)
 class MainWindow(QtGui.QMainWindow):
     NumGridRows = 3
     def __init__(self):
-        self.logger = logging.getLogger(APPLICATION_NAME +'.MainWindow')
+        self.logger = logging.getLogger(APPLICATION_NAME + '.MainWindow')
         self.logger.info("MainWindow.__init__")
 
         super(MainWindow, self).__init__()
