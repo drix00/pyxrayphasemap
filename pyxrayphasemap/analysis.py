@@ -31,10 +31,13 @@ import matplotlib.pyplot as plt
 DATA_TYPE_ATOMIC_NORMALIZED = "atom norm"
 DATA_TYPE_WEIGHT_NORMALIZED = "weight norm"
 DATA_TYPE_INTENSITY_DECONVOLUTION = "Intensity Deconvolution"
+DATA_TYPE_RAW_INTENSITY = "Raw Intensity"
+DATA_TYPE_NET_INTENSITY = "Net Intensity"
+
 DATA_TYPE_FRATIO = "f-ratio"
 DATA_TYPE_SE = "SE"
 DATA_TYPE_BSE = "BSE"
-DATA_TYPE_TOTAL_INTENSITY = "Total intensity"
+DATA_TYPE_TOTAL_PEAK_INTENSITY = "Total peak intensity"
 
 GROUP_MICROGRAPH = "micrograph"
 
@@ -55,8 +58,8 @@ class PhaseAnalysis(object):
     def readMicrographData(self, dataPath, sampleName, filename, micrographType):
         filepath = os.path.join(dataPath, filename)
         data = self._readData(filepath)
-        logging.info(np.min(data))
-        logging.info(np.max(data))
+        logging.debug(np.min(data))
+        logging.debug(np.max(data))
 
         data = (data - 26.25)  / (889.50 - 26.25)
 
@@ -68,8 +71,8 @@ class PhaseAnalysis(object):
         else:
             dataTypeGroup = h5file[GROUP_MICROGRAPH]
 
-        logging.info(dataTypeGroup.name)
-        logging.info(dataTypeGroup.parent)
+        logging.debug(dataTypeGroup.name)
+        logging.debug(dataTypeGroup.parent)
         if micrographType not in dataTypeGroup:
             dset = dataTypeGroup.create_dataset(micrographType, data.shape, dtype=np.float32)
             dset[:,:] = data
@@ -180,46 +183,68 @@ class PhaseAnalysis(object):
         arr = np.array(Im)
         return arr
 
-    def saveElementImages(self, graphicPath, basename):
+    def saveElementImages(self, graphicPath, basename, num_bins=50):
         with h5py.File(self.h5filepath, 'r') as h5file:
             elementData = self._getData(h5file, self.dataType)
 
             for symbol in elementData:
                 data = elementData[symbol]
-                plt.figure()
-                title = "%s %s" % (basename, symbol)
-                plt.title(title)
+                self._createFigure(graphicPath, basename, symbol, data, num_bins)
 
-                plt.imshow(data, aspect='equal')
-                plt.axis('off')
-                plt.colorbar()
-
-                filename = "%s_%s.png" % (basename, symbol)
-                filepath = os.path.join(graphicPath, filename)
-                plt.savefig(filepath)
-                plt.close()
-
-    def saveMicrographs(self, graphicPath, basename):
+    def saveMicrographs(self, graphicPath, basename, num_bins=50):
         with h5py.File(self.h5filepath, 'r') as h5file:
             dataTypeGroup = h5file[GROUP_MICROGRAPH]
 
             for micrographType in dataTypeGroup:
-                data = dataTypeGroup[micrographType]
-                plt.figure()
-                title = "%s %s" % (basename, micrographType)
-                plt.title(title)
+                data = dataTypeGroup[micrographType][...]
+                self._createFigure(graphicPath, basename, micrographType, data, num_bins)
 
-                plt.imshow(data, aspect='equal')
-                plt.axis('off')
-                plt.colorbar()
+    def _createFigure(self, graphicPath, basename, symbol, data, num_bins=50):
+        fig, (ax0, ax1) = plt.subplots(ncols=2, figsize=(8, 4))
 
+        title = "%s %s" % (basename, symbol)
+        fig.suptitle(title)
+
+        # This is  the colormap I'd like to use.
+        cm = plt.cm.get_cmap('hot')
+        image = ax1.imshow(data, aspect='equal', cmap=cm)
+        ax1.axis('off')
+        fig.colorbar(image)
+
+        # Get the histogramp
+        Y, X = np.histogram(data, num_bins, normed=1)
+        x_span = X.max() - X.min()
+        C = [cm(((x-X.min())/x_span)) for x in X]
+
+        ax0.bar(X[1:-1], Y[1:], color=C, width=X[1]-X[0])
+        #ax0.hist(data.flatten(), num_bins, normed=1, facecolor='green', alpha=0.5)
+        ax0.set_xlabel('Value')
+        ax0.set_ylabel('Probability')
+
+        plt.subplots_adjust(wspace=0.2, top=0.85, bottom=0.15)
+
+        filename = "%s_%s.png" % (basename, symbol)
+        filepath = os.path.join(graphicPath, filename)
+        plt.savefig(filepath)
+        plt.close()
+
+    def saveMicrographs_tif(self, graphicPath, basename):
+        with h5py.File(self.h5filepath, 'r') as h5file:
+            dataTypeGroup = h5file[GROUP_MICROGRAPH]
+
+            for micrographType in dataTypeGroup:
+                data = dataTypeGroup[micrographType][...]
+
+                image = Image.fromarray(np.uint8(data*255.0/np.max(data)))
                 filename = "%s_%s.png" % (basename, micrographType)
                 filepath = os.path.join(graphicPath, filename)
-                plt.savefig(filepath)
-                plt.close()
+                image.save(filepath)
 
-    def computeFratio(self, inputDatatype):
-        outputDatatype = DATA_TYPE_FRATIO
+    def computeFratio(self, inputDatatype, weightType=None):
+        if weightType is not None:
+            outputDatatype = DATA_TYPE_FRATIO + weightType
+        else:
+            outputDatatype = DATA_TYPE_FRATIO
 
         with h5py.File(self.h5filepath, 'a') as h5file:
             if outputDatatype not in h5file:
@@ -228,6 +253,8 @@ class PhaseAnalysis(object):
             else:
                 dataTypeGroup = h5file[outputDatatype]
 
+            logging.info(outputDatatype)
+
             elementData = self._getData(h5file, inputDatatype)
 
             totalIntensity = np.zeros_like(elementData[self.elements[0]])
@@ -235,17 +262,27 @@ class PhaseAnalysis(object):
             for symbol in self.elements:
                 totalIntensity += elementData[symbol]
 
-            logging.info(np.min(totalIntensity))
-            logging.info(np.max(totalIntensity))
+            logging.debug(np.min(totalIntensity))
+            logging.debug(np.max(totalIntensity))
+
+            if weightType is not None:
+                weight = h5file[GROUP_MICROGRAPH][weightType][...]
+                weight /= np.max(weight)
+            else:
+                weight = 1.0
 
             for symbol in self.elements:
                 if symbol not in dataTypeGroup:
                     dset = dataTypeGroup.create_dataset(symbol, totalIntensity.shape, dtype=np.float32)
                 else:
                     dset = dataTypeGroup[symbol]
-                dset[:,:] = elementData[symbol] / totalIntensity
 
-    def computeTotalIntensity(self, inputDatatype):
+                data = weight*elementData[symbol] / totalIntensity
+                data[np.isnan(data)] = 0
+                logging.debug(np.max(data))
+                dset[:,:] = data
+
+    def computeTotalPeakIntensity(self, inputDatatype):
         outputDatatype = GROUP_MICROGRAPH
 
         with h5py.File(self.h5filepath, 'a') as h5file:
@@ -262,15 +299,15 @@ class PhaseAnalysis(object):
             for symbol in self.elements:
                 totalIntensity += elementData[symbol]
 
-            logging.info(np.min(totalIntensity))
-            logging.info(np.max(totalIntensity))
+            logging.debug(np.min(totalIntensity))
+            logging.debug(np.max(totalIntensity))
 
             totalIntensity = (totalIntensity - np.min(totalIntensity))  / (np.max(totalIntensity) - np.min(totalIntensity))
 
-            if DATA_TYPE_TOTAL_INTENSITY not in dataTypeGroup:
-                dset = dataTypeGroup.create_dataset(DATA_TYPE_TOTAL_INTENSITY, totalIntensity.shape, dtype=np.float32)
+            if DATA_TYPE_TOTAL_PEAK_INTENSITY not in dataTypeGroup:
+                dset = dataTypeGroup.create_dataset(DATA_TYPE_TOTAL_PEAK_INTENSITY, totalIntensity.shape, dtype=np.float32)
             else:
-                dset = dataTypeGroup[DATA_TYPE_TOTAL_INTENSITY]
+                dset = dataTypeGroup[DATA_TYPE_TOTAL_PEAK_INTENSITY]
             dset[:,:] = totalIntensity
 
     def getElementData(self, datatype):
