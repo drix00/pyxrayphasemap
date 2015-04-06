@@ -121,7 +121,7 @@ class PhaseMap(object):
         image = self.getImage(gaussianFilter)
         image.save(filepath)
 
-    def showImage(self, filepath, gaussianFilter=False, legend=None):
+    def showImage(self, filepath, gaussianFilter=False, legend=None, save_only=False):
         image = self.getImage(gaussianFilter)
 
         plt.figure()
@@ -135,6 +135,9 @@ class PhaseMap(object):
             patches, labels = legend
         plt.figlegend(patches, labels, 'upper right')
         plt.savefig(filepath)
+
+        if save_only:
+            plt.close()
 
     def createNoPhaseImage(self, filepath):
         image = self.getNoPhaseImage()
