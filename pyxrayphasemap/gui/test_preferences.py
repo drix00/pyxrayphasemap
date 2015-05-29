@@ -22,7 +22,7 @@ import logging
 # Local modules.
 
 # Project modules
-import gui.preferences
+import pyxrayphasemap.gui.preferences
 
 # Globals and constants variables.
 
