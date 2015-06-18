@@ -3,6 +3,7 @@
 	<name>pyXRayPhaseMap</name>
 	<comment></comment>
 	<projects>
+		<project>pySpectrumFileFormat</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
