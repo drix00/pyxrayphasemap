@@ -14,6 +14,7 @@ Contents:
    :maxdepth: 2
 
    install
+   user_guide
    code
    develop
 
