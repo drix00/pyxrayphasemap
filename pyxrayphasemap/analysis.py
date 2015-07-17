@@ -128,6 +128,8 @@ class PhaseAnalysis(object):
                     dset[:,:] = elementData[element]
                     logging.debug(dset)
                     h5file.flush()
+                except ValueError as message:
+                    logging.error("%s for filepath %s", message, filepath)
                 except IOError:
                     logging.warning("Filepath does not exist %s", filepath)
             
