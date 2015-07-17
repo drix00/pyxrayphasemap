@@ -130,6 +130,7 @@ class PhaseAnalysis(object):
                     h5file.flush()
                 except IOError:
                     logging.warning("Filepath does not exist %s", filepath)
+            
             else:
                 dset = dataTypeGroup[element]
                 elementData[element] = np.array(dset)
@@ -166,15 +167,18 @@ class PhaseAnalysis(object):
         logging.error("Unkown extension %s for filepath %s", extension, filepath)
 
     def _readDataFromTextFile(self, filepath):
-        data = np.loadtxt(open(filepath,"rb"),delimiter=";")
+        data = np.loadtxt(open(filepath,"r"),delimiter=";")
         return data
 
     def _readDataFromTSVFile(self, filepath):
         text = open(filepath,"rb").read()
         lines = text.split(b'\r')
-        numberColumns = len(lines[0].split(b'\t'))
+        numberColumns = len(lines[0].strip().split(b'\t'))
         numberRows = len(lines) - 1
-        data = np.loadtxt(open(filepath,"rb"))
+        data = np.loadtxt(open(filepath,"r"))
+        print(numberColumns, numberRows)
+        print(data.shape)
+        print(data.size)
         data.shape = (numberRows, numberColumns)
         return data
 
@@ -260,7 +264,8 @@ class PhaseAnalysis(object):
             totalIntensity = np.zeros_like(elementData[self.elements[0]])
 
             for symbol in self.elements:
-                totalIntensity += elementData[symbol]
+                if symbol in elementData:
+                    totalIntensity += elementData[symbol]
 
             logging.debug(np.min(totalIntensity))
             logging.debug(np.max(totalIntensity))
@@ -272,15 +277,16 @@ class PhaseAnalysis(object):
                 weight = 1.0
 
             for symbol in self.elements:
-                if symbol not in dataTypeGroup:
-                    dset = dataTypeGroup.create_dataset(symbol, totalIntensity.shape, dtype=np.float32)
-                else:
-                    dset = dataTypeGroup[symbol]
-
-                data = weight*elementData[symbol] / totalIntensity
-                data[np.isnan(data)] = 0
-                logging.debug(np.max(data))
-                dset[:,:] = data
+                if symbol in elementData:
+                    if symbol not in dataTypeGroup:
+                        dset = dataTypeGroup.create_dataset(symbol, totalIntensity.shape, dtype=np.float32)
+                    else:
+                        dset = dataTypeGroup[symbol]
+    
+                    data = weight*elementData[symbol] / totalIntensity
+                    data[np.isnan(data)] = 0
+                    logging.debug(np.max(data))
+                    dset[:,:] = data
 
     def computeTotalPeakIntensity(self, inputDatatype):
         outputDatatype = GROUP_MICROGRAPH
@@ -297,7 +303,8 @@ class PhaseAnalysis(object):
             totalIntensity = np.zeros_like(elementData[self.elements[0]])
 
             for symbol in self.elements:
-                totalIntensity += elementData[symbol]
+                if symbol in elementData:
+                    totalIntensity += elementData[symbol]
 
             logging.debug(np.min(totalIntensity))
             logging.debug(np.max(totalIntensity))
@@ -321,7 +328,8 @@ class PhaseAnalysis(object):
 
         elementData = {}
         for symbol in self.elements:
-            elementData[symbol] = dataTypeGroup[symbol][...]
+            if symbol in dataTypeGroup:
+                elementData[symbol] = dataTypeGroup[symbol][...]
 
         return elementData
 
