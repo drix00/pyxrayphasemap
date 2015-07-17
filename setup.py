@@ -73,7 +73,7 @@ setup(name="pyxrayphasemap",
                    'Topic :: Scientific/Engineering',
                    'Topic :: Scientific/Engineering :: Physics'],
 
-      packages=find_packages(),
+      packages=find_packages(exclude=['gui',]),
 
       include_package_data=False, # Do not include test data
 
@@ -82,6 +82,7 @@ setup(name="pyxrayphasemap",
                         'scipy',
                         'h5py',
                         'matplotlib'],
+      # pySpectrumFileFormat
       setup_requires=['nose', 'coverage'],
 
       test_suite='nose.collector',
