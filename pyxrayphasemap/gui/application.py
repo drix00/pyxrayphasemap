@@ -23,7 +23,7 @@ import sys
 # Third party modules.
 from PySide import QtCore, QtGui
 import matplotlib
-matplotlib.use('Qt4Agg')
+matplotlib.use('Qt4Agg', warn=False)
 matplotlib.rcParams['backend.qt4']='PySide'
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure

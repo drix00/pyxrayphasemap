@@ -1,11 +1,6 @@
 pyxrayphasemap.gui package
 ==========================
 
-.. automodule:: pyxrayphasemap.gui
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 Submodules
 ----------
 
@@ -50,3 +45,10 @@ pyxrayphasemap.gui.tests module
     :show-inheritance:
 
 
+Module contents
+---------------
+
+.. automodule:: pyxrayphasemap.gui
+    :members:
+    :undoc-members:
+    :show-inheritance:

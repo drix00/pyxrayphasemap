@@ -13,3 +13,8 @@ Create a pip wheel file using setup.py::
 
    py -2 setup.py bdist_wheel -d dist
    py -3 setup.py bdist_wheel -d dist
+
+Create the html documentation go in the ``docs`` folder of the project and run::
+
+   make clean
+   make html

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-.. py:currentmodule:: pyMcGill.experimental.phaseMap.Phase
+.. py:currentmodule:: pyxrayphasemap.phase
 .. moduleauthor:: Hendrix Demers <hendrix.demers@mail.mcgill.ca>
 
 Phase to be used in a phase map.
@@ -67,7 +67,3 @@ class Phase(object):
     @name.setter
     def name(self, name):
         self._name = name
-
-if __name__ == '__main__': #pragma: no cover
-    import pyHendrixDemersTools.Runner as Runner
-    Runner.Runner().run(runFunction=None)

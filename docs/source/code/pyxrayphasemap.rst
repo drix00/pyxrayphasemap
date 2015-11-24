@@ -1,11 +1,6 @@
 pyxrayphasemap package
 ======================
 
-.. automodule:: pyxrayphasemap
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 Subpackages
 -----------
 
@@ -89,3 +84,10 @@ pyxrayphasemap.tests module
     :show-inheritance:
 
 
+Module contents
+---------------
+
+.. automodule:: pyxrayphasemap
+    :members:
+    :undoc-members:
+    :show-inheritance:

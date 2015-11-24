@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-.. py:currentmodule::
+.. py:currentmodule:: pyxrayphasemap.gui.preferences
 .. moduleauthor:: Hendrix Demers <hendrix.demers@mail.mcgill.ca>
 
 Preferences module for x-ray phase map application GUI.
