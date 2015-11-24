@@ -72,7 +72,7 @@ Install Python 3 on windows
 Install Python package on windows
 ---------------------------------
 
- To install any package on windows with PIP do the following command after you have download the pyxrayphasemap-*.whl
+ To install any package on windows with PIP do the following command after you have download the pyxrayphasemap-\*.whl
 
 * open cmd window
 * change directory to the \*.whl files::

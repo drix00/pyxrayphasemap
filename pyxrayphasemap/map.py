@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-.. py:currentmodule:: pyMcGill.experimental.phaseMap.map
+.. py:currentmodule:: pyxrayphasemap.map
 .. moduleauthor:: Hendrix Demers <hendrix.demers@mail.mcgill.ca>
 
 Map used in the phase analysis module.
@@ -172,7 +172,3 @@ def savePhaseOnly(phaseMap, phase, graphicPath, color):
     filename= r'%s_%s_%s.png' % (phaseMap.sampleName, phaseMap.dataType, phase.name)
     filepath = os.path.join(graphicPath, filename)
     phaseImage.saveImage(filepath)
-
-if __name__ == '__main__': #pragma: no cover
-    import pyHendrixDemersTools.Runner as Runner
-    Runner.Runner().run(runFunction=None)
