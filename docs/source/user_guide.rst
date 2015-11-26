@@ -108,3 +108,40 @@ the display methods can specify if you want to display the graphic now or later 
 
 When a graphic is display now, the script stop until you close all graphic windows. Calling :py:class:`~pyxrayphasemap.analysis.PhaseAnalysis.show`
 will only show new graphic created after the last display with ``display_now=True``.
+
+Create phases map
+-----------------
+
+Create a :py:class:`~pyxrayphasemap.map.PhaseMap` object and passing a valid
+:py:class:`~pyxrayphasemap.analysis.PhaseAnalysis` object with the data::
+
+    from pyxrayphasemap.map import PhaseMap
+    phase_map_name = "1-LFS4-2_weight_Fraction"
+    phase_map = PhaseMap(phase_map_name, phase_analysis)
+    
+Create phases
+-------------
+
+To create a phase, first you create a :py:class:`~pyxrayphasemap.phase.Phase` object::
+   	
+    from pyxrayphasemap.phase import Phase
+    phase_name = "FeO"
+    phase = Phase(phase_name)
+    
+Than add a condition::
+
+    data_type = DATA_TYPE_WEIGHT_NORMALIZED
+    label = 'Fe'
+    minimum = 40.
+    maximum = 100.0
+    phase.add_condition(data_type, label, minimum, maximum)
+
+Than add it to :py:class:`~pyxrayphasemap.map.PhaseMap` object with a valid
+`matplotlib color <http://matplotlib.org/examples/color/named_colors.html>`_::
+
+    phase_map.add_phase(phase, "red")
+
+ Now you can display the phase map::
+ 
+    phase_map.display_map()
+    

@@ -16,8 +16,6 @@ __license__ = ""
 # Standard library modules.
 
 # Third party modules.
-import numpy as np
-import scipy.ndimage as ndimage
 
 # Local modules.
 
@@ -26,41 +24,15 @@ import scipy.ndimage as ndimage
 # Globals and constants variables.
 
 class Phase(object):
-    def __init__(self, name, thresholds, elementData):
+    def __init__(self, name):
         self.name = name
-        self._thresholds = thresholds
-        self._elementData = elementData
-
-    def getData(self, color, dilationErosion=False):
-        width, height = list(self._elementData.values())[0].shape
-        rgb_R = np.zeros((width, height), dtype=np.float32)
-        rgb_G = np.zeros((width, height), dtype=np.float32)
-        rgb_B = np.zeros((width, height), dtype=np.float32)
-
-        compound_index = np.ones((width, height), dtype='bool')
-
-        for element in self._thresholds:
-            dataElement = self._elementData[element]
-            thresholdMin, thresholdMax = self._thresholds[element]
-            compound_index &= dataElement >= thresholdMin
-            compound_index &= dataElement <= thresholdMax
-
-        if dilationErosion:
-            struct = ndimage.generate_binary_structure(2, 2)
-
-            compound_index = ndimage.binary_closing(compound_index, struct, iterations=1)
-            compound_index = ndimage.binary_opening(compound_index, struct, iterations=1)
-            compound_index = ndimage.binary_closing(compound_index, struct, iterations=2)
-            compound_index = ndimage.binary_opening(compound_index, struct, iterations=2)
-            compound_index = ndimage.binary_closing(compound_index, struct, iterations=1)
-
-        rgb_R[compound_index] = color[0]
-        rgb_G[compound_index] = color[1]
-        rgb_B[compound_index] = color[2]
-        data = np.dstack((rgb_R, rgb_G, rgb_B))
-
-        return data
-
+        
+        self.conditions = {}
+        
+    def add_condition(self, data_type, label, minimum=0.0, maximum=None):
+        key = (data_type, label)
+        self.conditions[key] = (minimum, maximum)
+        
     @property
     def name(self):
         return self._name
