@@ -31,31 +31,86 @@ import matplotlib
 # Globals and constants variables.
 
 class PhaseMap(object):
-    def __init__(self, width, height, dilationErosion=False):
-        self._width = width
-        self._height = height
-        self._dilationErosion = dilationErosion
+    def __init__(self, phase_map_name, phase_analysis):
+        self.phase_map_name = phase_map_name
+        self.phase_analysis = phase_analysis
+        
+        self.phases = {}
 
-        self._phases = []
-        self._color = []
+    def add_phase(self, phase, color_name, label=None):
+        if label is None:
+            label = phase.name
+        self.phases[label] = (phase, color_name)
 
-    def addPhase(self, phase, color):
-        self._phases.append(phase)
-        self._color.append(color)
+    def display_map(self, label=None, gaussianFilter=False, legend=None, display_now=True):
+        image = self.get_image(label)
+        
+        plt.figure()
+        if label is not None:
+            plt.title(label)
+        plt.imshow(image, aspect='equal')
+        plt.axis('off')
+        
+        if label is None:
+            if legend is None:
+                patches, labels = self.getLegend()
+            else:
+                patches, labels = legend
+            plt.figlegend(patches, labels, 'upper right')
+        
+        if display_now:
+            self.show()
+        
+    def display_no_phase_map(self, display_now=True):
+        image = self.get_no_phase_image()
 
-    def createImage(self):
-#         labels.append(name)
-#         color = getRGB("blue")
-#         patches.append(matplotlib.patches.Patch(color=color))
-        pass
+        plt.figure()
 
-    def getImage(self, gaussianFilter=False):
-        imageData = np.zeros((self._width, self._height, 3), dtype=np.float32)
-        for phase, colorName in zip(self._phases, self._color):
-            color = self._getRGB(colorName)
-            data = phase.getData(color, self._dilationErosion)
-            imageData += data
+        plt.imshow(image, aspect='equal')
+        plt.axis('off')
 
+        patches = [matplotlib.patches.Patch(color="black"), matplotlib.patches.Patch(edgecolor='black', facecolor='white')]
+        labels = ["No phase", "Phases"]
+        plt.figlegend(patches, labels, 'upper right')
+        
+        if display_now:
+            self.show()
+
+    def display_overlap_map(self, display_now=True):
+        image = self.get_overlap_phase_image()
+
+        plt.figure()
+
+        plt.imshow(image, aspect='equal')
+        plt.axis('off')
+
+        patches = [matplotlib.patches.Patch(edgecolor='black', facecolor='white')]
+        labels = ["Overlap phases"]
+        plt.figlegend(patches, labels, 'upper right')
+        
+        if display_now:
+            self.show()
+
+    def show(self):
+        plt.show()
+
+    def get_image(self, label=None, gaussianFilter=False):
+        width = self.phase_analysis.width
+        height = self.phase_analysis.height
+        imageData = np.zeros((width, height, 3), dtype=np.float32)
+        
+        if label is None:
+            for label in self.phases:
+                phase, color_name = self.phases[label]
+                color = self._getRGB(color_name)
+                data = self.phase_analysis.get_phase_data(phase, color)
+                imageData += data
+        else:
+                phase, color_name = self.phases[label]
+                color = self._getRGB(color_name)
+                data = self.phase_analysis.get_phase_data(phase, color)
+                imageData += data
+            
         image = Image.fromarray(np.uint8(imageData*255.0))
         if gaussianFilter:
             imageFiltered = ndimage.gaussian_filter(image, sigma=(1, 1, 0), mode = 'nearest', order=0)
@@ -63,22 +118,28 @@ class PhaseMap(object):
 
         return image
 
-    def getNoPhaseImage(self):
+    def get_no_phase_image(self):
         color = (1, 1, 1)
-        imageData = np.zeros((self._width, self._height, 3), dtype=np.float32)
-        for phase in self._phases:
-            data = phase.getData(color, self._dilationErosion)
+        width = self.phase_analysis.width
+        height = self.phase_analysis.height
+        imageData = np.zeros((width, height, 3), dtype=np.float32)
+        for label in self.phases:
+            phase, _color_name = self.phases[label]
+            data = self.phase_analysis.get_phase_data(phase, color)
             imageData += data
 
         image = Image.fromarray(np.uint8(imageData*255.0))
 
         return image
 
-    def getOverlapPhaseImage(self):
+    def get_overlap_phase_image(self):
         color = (1, 1, 1)
-        imageData = np.zeros((self._width, self._height, 3), dtype=np.float32)
-        for phase in self._phases:
-            data = phase.getData(color, self._dilationErosion)
+        width = self.phase_analysis.width
+        height = self.phase_analysis.height
+        imageData = np.zeros((width, height, 3), dtype=np.float32)
+        for label in self.phases:
+            phase, _color_name = self.phases[label]
+            data = self.phase_analysis.get_phase_data(phase, color)
             imageData += data
 
         logging.debug(imageData.shape)
@@ -103,9 +164,10 @@ class PhaseMap(object):
         patches = []
         labels = []
 
-        for phase, colorName in zip(self._phases, self._color):
-            labels.append(phase.name)
-            color = self._getRGB(colorName)
+        for label in self.phases:
+            labels.append(label)
+            _phase, color_name = self.phases[label]
+            color = self._getRGB(color_name)
             if color == (1, 1, 1):
                 patches.append(matplotlib.patches.Patch(edgecolor='black', facecolor='white'))
             else:
@@ -118,11 +180,11 @@ class PhaseMap(object):
         return rgb
 
     def saveImage(self, filepath, gaussianFilter=False):
-        image = self.getImage(gaussianFilter)
+        image = self.get_image(gaussianFilter)
         image.save(filepath)
 
     def showImage(self, filepath, gaussianFilter=False, legend=None, save_only=False):
-        image = self.getImage(gaussianFilter)
+        image = self.get_image(gaussianFilter)
 
         plt.figure()
 
@@ -168,7 +230,7 @@ class PhaseMap(object):
 def savePhaseOnly(phaseMap, phase, graphicPath, color):
     phaseImage = PhaseMap(phaseMap.width, phaseMap.height)
 
-    phaseImage.addPhase(phase, color)
+    phaseImage.add_phase(phase, color)
     filename= r'%s_%s_%s.png' % (phaseMap.sampleName, phaseMap.dataType, phase.name)
     filepath = os.path.join(graphicPath, filename)
     phaseImage.saveImage(filepath)

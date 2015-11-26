@@ -22,6 +22,7 @@ import h5py
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
+import scipy.ndimage as ndimage
 
 # Local modules.
 
@@ -419,7 +420,15 @@ class PhaseAnalysis(object):
                         logging.info(np.max(data))
                         logging.info(np.min(data))
                         dset[:,:] = data
-
+    
+    def get_data(self, data_type, label):
+        with h5py.File(self.h5filepath, 'r') as h5file:
+            dataTypeGroup = h5file[data_type]
+    
+            data = dataTypeGroup[label][...]
+            
+            return data
+    
     def getElementData(self, datatype):
         with h5py.File(self.h5filepath, 'r') as h5file:
             elementData = self._getData(h5file, datatype)
@@ -434,6 +443,44 @@ class PhaseAnalysis(object):
             elementData[label] = dataTypeGroup[label][...]
 
         return elementData
+
+    def get_phase_data(self, phases, color, dilationErosion=False):
+        """
+        """
+        rgb_R = np.zeros((self.width, self.height), dtype=np.float32)
+        rgb_G = np.zeros((self.width, self.height), dtype=np.float32)
+        rgb_B = np.zeros((self.width, self.height), dtype=np.float32)
+
+        compound_index = np.ones((self.width, self.height), dtype='bool')
+        
+        try:
+            phases[0]
+        except TypeError:
+            phases = [phases]
+            
+        for phase in phases:
+            for data_type, label in phase.conditions:
+                
+                data = self.get_data(data_type, label)
+                thresholdMin, thresholdMax = phase.conditions[(data_type, label)]
+                compound_index &= data >= thresholdMin
+                compound_index &= data <= thresholdMax
+
+        if dilationErosion:
+            struct = ndimage.generate_binary_structure(2, 2)
+
+            compound_index = ndimage.binary_closing(compound_index, struct, iterations=1)
+            compound_index = ndimage.binary_opening(compound_index, struct, iterations=1)
+            compound_index = ndimage.binary_closing(compound_index, struct, iterations=2)
+            compound_index = ndimage.binary_opening(compound_index, struct, iterations=2)
+            compound_index = ndimage.binary_closing(compound_index, struct, iterations=1)
+
+        rgb_R[compound_index] = color[0]
+        rgb_G[compound_index] = color[1]
+        rgb_B[compound_index] = color[2]
+        data = np.dstack((rgb_R, rgb_G, rgb_B))
+
+        return data
 
     @property
     def overwrite(self):
