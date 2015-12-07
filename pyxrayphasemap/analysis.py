@@ -420,15 +420,15 @@ class PhaseAnalysis(object):
                         logging.info(np.max(data))
                         logging.info(np.min(data))
                         dset[:,:] = data
-    
+
     def get_data(self, data_type, label):
         with h5py.File(self.h5filepath, 'r') as h5file:
             dataTypeGroup = h5file[data_type]
-    
+
             data = dataTypeGroup[label][...]
-            
+
             return data
-    
+
     def getElementData(self, datatype):
         with h5py.File(self.h5filepath, 'r') as h5file:
             elementData = self._getData(h5file, datatype)
@@ -444,7 +444,7 @@ class PhaseAnalysis(object):
 
         return elementData
 
-    def get_phase_data(self, phases, color, dilationErosion=False):
+    def get_phase_data(self, phases, color, is_dilation_erosion=False):
         """
         """
         rgb_R = np.zeros((self.width, self.height), dtype=np.float32)
@@ -452,21 +452,20 @@ class PhaseAnalysis(object):
         rgb_B = np.zeros((self.width, self.height), dtype=np.float32)
 
         compound_index = np.ones((self.width, self.height), dtype='bool')
-        
+
         try:
             phases[0]
         except TypeError:
             phases = [phases]
-            
+
         for phase in phases:
             for data_type, label in phase.conditions:
-                
                 data = self.get_data(data_type, label)
                 thresholdMin, thresholdMax = phase.conditions[(data_type, label)]
                 compound_index &= data >= thresholdMin
                 compound_index &= data <= thresholdMax
 
-        if dilationErosion:
+        if is_dilation_erosion:
             struct = ndimage.generate_binary_structure(2, 2)
 
             compound_index = ndimage.binary_closing(compound_index, struct, iterations=1)
