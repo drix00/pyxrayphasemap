@@ -16,6 +16,7 @@ __license__ = ""
 # Standard library modules.
 import logging
 import os.path
+import csv
 
 # Third party modules.
 import numpy as np
@@ -41,8 +42,11 @@ class PhaseMap(object):
     def add_phase(self, phase, color_name, label=None):
         if label is None:
             label = phase.name
-        self.phases[label] = (phase, color_name)
-
+        self.phases[label] = ([phase], color_name, True)
+        
+    def add_phases(self, label, phases, color_name, union=True):
+        self.phases[label] = (phases, color_name, union)
+    
     def display_map(self, label=None, gaussianFilter=False, legend=None, display_now=True):
         image = self.get_image(label)
 
@@ -148,7 +152,23 @@ class PhaseMap(object):
         filepath = os.path.join(figures_path, self.phase_map_name + "_overlap" + ".png")
         plt.savefig(filepath)
         plt.close()
-
+        
+    def save_phases_fraction(self, figures_path):
+        phase_fractions = self.get_phases_fraction()
+        
+        filepath = os.path.join(figures_path, self.phase_map_name + "_phases_fraction" + ".csv")
+        with open(filepath, 'w', newline='\n') as output_file:
+            writer = csv.writer(output_file)
+            
+            header_row = ["Phase", "Pixel fraction"]
+            writer.writerow(header_row)
+            
+            for phase_name in phase_fractions:
+                row = []
+                row.append(phase_name)
+                row.append(phase_fractions[phase_name])
+                writer.writerow(row)
+                
     def get_image(self, label=None, gaussianFilter=False):
         width = self.phase_analysis.width
         height = self.phase_analysis.height
@@ -156,14 +176,14 @@ class PhaseMap(object):
 
         if label is None:
             for label in self.phases:
-                phase, color_name = self.phases[label]
+                phases, color_name, union = self.phases[label]
                 color = self._getRGB(color_name)
-                data = self.phase_analysis.get_phase_data(phase, color, self.is_dilation_erosion)
+                data = self.phase_analysis.get_phase_data(phases, color, self.is_dilation_erosion, union)
                 imageData += data
         else:
-                phase, color_name = self.phases[label]
+                phases, color_name, union = self.phases[label]
                 color = self._getRGB(color_name)
-                data = self.phase_analysis.get_phase_data(phase, color, self.is_dilation_erosion)
+                data = self.phase_analysis.get_phase_data(phases, color, self.is_dilation_erosion, union)
                 imageData += data
 
         image = Image.fromarray(np.uint8(imageData*255.0))
@@ -179,8 +199,8 @@ class PhaseMap(object):
         height = self.phase_analysis.height
         imageData = np.zeros((width, height, 3), dtype=np.float32)
         for label in self.phases:
-            phase, _color_name = self.phases[label]
-            data = self.phase_analysis.get_phase_data(phase, color, self.is_dilation_erosion)
+            phases, _color_name, union = self.phases[label]
+            data = self.phase_analysis.get_phase_data(phases, color, self.is_dilation_erosion, union)
             imageData += data
 
         image = Image.fromarray(np.uint8(imageData*255.0))
@@ -193,8 +213,8 @@ class PhaseMap(object):
         height = self.phase_analysis.height
         imageData = np.zeros((width, height, 3), dtype=np.float32)
         for label in self.phases:
-            phase, _color_name = self.phases[label]
-            data = self.phase_analysis.get_phase_data(phase, color, self.is_dilation_erosion)
+            phases, _color_name, union = self.phases[label]
+            data = self.phase_analysis.get_phase_data(phases, color, self.is_dilation_erosion, union)
             imageData += data
 
         logging.debug(imageData.shape)
@@ -215,13 +235,23 @@ class PhaseMap(object):
 
         return image
 
+    def get_phases_fraction(self):
+        phase_fractions = {}
+        for label in self.phases:
+            phases, _color_name, union = self.phases[label]
+            phase_fraction = self.phase_analysis.get_phase_fraction(phases, self.is_dilation_erosion, union)
+            
+            phase_fractions[label] = phase_fraction
+        
+        return phase_fractions
+        
     def getLegend(self):
         patches = []
         labels = []
 
         for label in self.phases:
             labels.append(label)
-            _phase, color_name = self.phases[label]
+            _phase, color_name, _union = self.phases[label]
             color = self._getRGB(color_name)
             if color == (1, 1, 1):
                 patches.append(matplotlib.patches.Patch(edgecolor='black', facecolor='white'))

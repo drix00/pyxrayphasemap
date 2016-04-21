@@ -444,14 +444,35 @@ class PhaseAnalysis(object):
 
         return elementData
 
-    def get_phase_data(self, phases, color, is_dilation_erosion=False):
+    def get_phase_data(self, phases, color, is_dilation_erosion=False, union=True):
         """
         """
         rgb_R = np.zeros((self.width, self.height), dtype=np.float32)
         rgb_G = np.zeros((self.width, self.height), dtype=np.float32)
         rgb_B = np.zeros((self.width, self.height), dtype=np.float32)
 
-        compound_index = np.ones((self.width, self.height), dtype='bool')
+        compound_index = self.compute_compound_index(phases, is_dilation_erosion, union)
+
+        rgb_R[compound_index] = color[0]
+        rgb_G[compound_index] = color[1]
+        rgb_B[compound_index] = color[2]
+        data = np.dstack((rgb_R, rgb_G, rgb_B))
+
+        return data
+
+    def get_phase_fraction(self, phases, is_dilation_erosion=False, union=True):
+        """
+        """
+        total_number_pixels = self.width*self.height
+
+        compound_index = self.compute_compound_index(phases, is_dilation_erosion, union)
+
+        number_pixels = np.sum(compound_index)
+        phase_fraction = number_pixels/total_number_pixels
+        return phase_fraction
+
+    def compute_compound_index(self, phases, is_dilation_erosion, union):
+        compound_index = np.zeros((self.width, self.height), dtype='bool')
 
         try:
             phases[0]
@@ -459,11 +480,12 @@ class PhaseAnalysis(object):
             phases = [phases]
 
         for phase in phases:
-            for data_type, label in phase.conditions:
-                data = self.get_data(data_type, label)
-                thresholdMin, thresholdMax = phase.conditions[(data_type, label)]
-                compound_index &= data >= thresholdMin
-                compound_index &= data <= thresholdMax
+            phase_compound_index = self.compute_phase_compound_index(phase)
+            
+            if union:
+                compound_index |= phase_compound_index
+            else:
+                compound_index &= phase_compound_index
 
         if is_dilation_erosion:
             struct = ndimage.generate_binary_structure(2, 2)
@@ -474,12 +496,18 @@ class PhaseAnalysis(object):
             compound_index = ndimage.binary_opening(compound_index, struct, iterations=2)
             compound_index = ndimage.binary_closing(compound_index, struct, iterations=1)
 
-        rgb_R[compound_index] = color[0]
-        rgb_G[compound_index] = color[1]
-        rgb_B[compound_index] = color[2]
-        data = np.dstack((rgb_R, rgb_G, rgb_B))
+        return compound_index
 
-        return data
+    def compute_phase_compound_index(self, phase):
+        compound_index = np.ones((self.width, self.height), dtype='bool')
+
+        for data_type, label in phase.conditions:
+            data = self.get_data(data_type, label)
+            thresholdMin, thresholdMax = phase.conditions[(data_type, label)]
+            compound_index &= data >= thresholdMin
+            compound_index &= data <= thresholdMax
+
+        return compound_index
 
     @property
     def overwrite(self):

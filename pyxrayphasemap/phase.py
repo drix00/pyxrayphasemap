@@ -26,13 +26,13 @@ __license__ = ""
 class Phase(object):
     def __init__(self, name):
         self.name = name
-        
+
         self.conditions = {}
-        
+
     def add_condition(self, data_type, label, minimum=0.0, maximum=None):
         key = (data_type, label)
         self.conditions[key] = (minimum, maximum)
-        
+
     @property
     def name(self):
         return self._name
