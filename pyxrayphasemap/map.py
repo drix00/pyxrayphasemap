@@ -6,12 +6,21 @@
 Map used in the phase analysis module.
 """
 
-# Script information for the file.
-__author__ = "Hendrix Demers (hendrix.demers@mail.mcgill.ca)"
-__version__ = ""
-__date__ = ""
-__copyright__ = "Copyright (c) 2014 Hendrix Demers"
-__license__ = ""
+###############################################################################
+# Copyright 2016 Hendrix Demers
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+###############################################################################
 
 # Standard library modules.
 import logging
@@ -117,8 +126,8 @@ class PhaseMap(object):
 
         if label is None:
             label = "allphases"
-        filepath = os.path.join(figures_path, self.phase_map_name + label + ".png")
-        plt.savefig(filepath)
+        file_path = os.path.join(figures_path, self.phase_map_name + label + ".png")
+        plt.savefig(file_path)
         plt.close()
 
     def save_no_phase_map(self, figures_path):
@@ -133,8 +142,8 @@ class PhaseMap(object):
         labels = ["No phase", "Phases"]
         plt.figlegend(patches, labels, 'upper right')
 
-        filepath = os.path.join(figures_path, self.phase_map_name + "_nophase" + ".png")
-        plt.savefig(filepath)
+        file_path = os.path.join(figures_path, self.phase_map_name + "_nophase" + ".png")
+        plt.savefig(file_path)
         plt.close()
 
     def save_overlap_map(self, figures_path):
@@ -149,15 +158,15 @@ class PhaseMap(object):
         labels = ["Overlap phases"]
         plt.figlegend(patches, labels, 'upper right')
 
-        filepath = os.path.join(figures_path, self.phase_map_name + "_overlap" + ".png")
-        plt.savefig(filepath)
+        file_path = os.path.join(figures_path, self.phase_map_name + "_overlap" + ".png")
+        plt.savefig(file_path)
         plt.close()
         
     def save_phases_fraction(self, figures_path):
         phase_fractions = self.get_phases_fraction()
         
-        filepath = os.path.join(figures_path, self.phase_map_name + "_phases_fraction" + ".csv")
-        with open(filepath, 'w', newline='\n') as output_file:
+        file_path = os.path.join(figures_path, self.phase_map_name + "_phases_fraction" + ".csv")
+        with open(file_path, 'w', newline='\n') as output_file:
             writer = csv.writer(output_file)
             
             header_row = ["Phase", "Pixel fraction"]
@@ -264,11 +273,11 @@ class PhaseMap(object):
         rgb = matplotlib.colors.hex2color(matplotlib.colors.cnames[name])
         return rgb
 
-    def saveImage(self, filepath, gaussianFilter=False):
+    def saveImage(self, file_path, gaussianFilter=False):
         image = self.get_image(gaussianFilter)
-        image.save(filepath)
+        image.save(file_path)
 
-    def showImage(self, filepath, gaussianFilter=False, legend=None, save_only=False):
+    def showImage(self, file_path, gaussianFilter=False, legend=None, save_only=False):
         image = self.get_image(gaussianFilter)
 
         plt.figure()
@@ -281,12 +290,12 @@ class PhaseMap(object):
         else:
             patches, labels = legend
         plt.figlegend(patches, labels, 'upper right')
-        plt.savefig(filepath)
+        plt.savefig(file_path)
 
         if save_only:
             plt.close()
 
-    def createNoPhaseImage(self, filepath):
+    def createNoPhaseImage(self, file_path):
         image = self.getNoPhaseImage()
 
         plt.figure()
@@ -297,9 +306,9 @@ class PhaseMap(object):
         patches = [matplotlib.patches.Patch(color="black"), matplotlib.patches.Patch(edgecolor='black', facecolor='white')]
         labels = ["No phase", "Phases"]
         plt.figlegend(patches, labels, 'upper right')
-        plt.savefig(filepath)
+        plt.savefig(file_path)
 
-    def createOverlapPhaseImage(self, filepath):
+    def createOverlapPhaseImage(self, file_path):
         image = self.getOverlapPhaseImage()
 
         plt.figure()
@@ -310,12 +319,12 @@ class PhaseMap(object):
         patches = [matplotlib.patches.Patch(edgecolor='black', facecolor='white')]
         labels = ["Overlap phases"]
         plt.figlegend(patches, labels, 'upper right')
-        plt.savefig(filepath)
+        plt.savefig(file_path)
 
 def savePhaseOnly(phaseMap, phase, graphicPath, color):
     phaseImage = PhaseMap(phaseMap.width, phaseMap.height)
 
     phaseImage.add_phase(phase, color)
     filename= r'%s_%s_%s.png' % (phaseMap.sampleName, phaseMap.dataType, phase.name)
-    filepath = os.path.join(graphicPath, filename)
-    phaseImage.saveImage(filepath)
+    file_path = os.path.join(graphicPath, filename)
+    phaseImage.saveImage(file_path)

@@ -6,12 +6,21 @@
 Tests for the module `analysis`.
 """
 
-# Script information for the file.
-__author__ = "Hendrix Demers (hendrix.demers@mail.mcgill.ca)"
-__version__ = "0.1"
-__date__ = "Mar 26, 2015"
-__copyright__ = "Copyright (c) 2015 Hendrix Demers"
-__license__ = "GPL 3"
+###############################################################################
+# Copyright 2016 Hendrix Demers
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+###############################################################################
 
 # Standard library modules.
 import unittest
@@ -26,6 +35,7 @@ import pyHendrixDemersTools.Files as Files
 from pyxrayphasemap.analysis import PhaseAnalysis
 
 # Globals and constants variables.
+
 
 class Testanalysis(unittest.TestCase):
     """
@@ -53,7 +63,7 @@ class Testanalysis(unittest.TestCase):
         First test to check if the testcase is working with the testing framework.
         """
 
-        #self.fail("Test if the testcase is working.")
+        # self.fail("Test if the testcase is working.")
 
     def test_test_data_path(self):
         """
@@ -64,21 +74,19 @@ class Testanalysis(unittest.TestCase):
 
         self.assertTrue(os.path.isdir(test_data_path))
 
-        #self.fail("Test if the testcase is working.")
-
     def test__readDataFromTextFile(self):
         """
         Tests for method :py:meth:`_readDataFromTextFile`.
         """
 
-        phase_analysis = PhaseAnalysis("Dummy_filepath")
-        filepath = os.path.join(self.test_data_path, "bruker", "good_text_export.txt")
-        data = phase_analysis._readDataFromTextFile(filepath)
+        phase_analysis = PhaseAnalysis("Dummy_file_path")
+        file_path = os.path.join(self.test_data_path, "bruker", "good_text_export.txt")
+        data = phase_analysis._readDataFromTextFile(file_path)
 
         print(data.shape)
-        #self.fail("Test if the testcase is working.")
+#        self.fail("Test if the testcase is working.")
 
-if __name__ == '__main__':  #pragma: no cover
+if __name__ == '__main__':  # pragma: no cover
     import nose
     import sys
     argv = sys.argv
