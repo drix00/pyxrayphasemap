@@ -35,14 +35,6 @@ pyxrayphasemap.phase module
     :undoc-members:
     :show-inheritance:
 
-pyxrayphasemap.raw_map module
------------------------------
-
-.. automodule:: pyxrayphasemap.raw_map
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 pyxrayphasemap.test_analysis module
 -----------------------------------
 
@@ -63,14 +55,6 @@ pyxrayphasemap.test_phase module
 --------------------------------
 
 .. automodule:: pyxrayphasemap.test_phase
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-pyxrayphasemap.test_raw_map module
-----------------------------------
-
-.. automodule:: pyxrayphasemap.test_raw_map
     :members:
     :undoc-members:
     :show-inheritance:

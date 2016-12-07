@@ -6,16 +6,24 @@
 Setup pyXRayPhaseMap project.
 """
 
-# Script information for the file.
-__author__ = "Hendrix Demers (hendrix.demers@mail.mcgill.ca)"
-__version__ = "0.1"
-__copyright__ = "Copyright (c) 2014 Hendrix Demers"
-__license__ = "GPL v3"
+###############################################################################
+# Copyright 2016 Hendrix Demers
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+###############################################################################
 
 # Standard library modules.
 import os
-import zipfile
-from distutils.cmd import Command
 
 # Third party modules.
 from setuptools import setup, find_packages
@@ -26,66 +34,36 @@ from setuptools import setup, find_packages
 
 # Globals and constants variables.
 
-class TestDataCommand(Command):
-
-    description = "create a zip of all files in the testData folder"
-    user_options = [('dist-dir=', 'd',
-                     "directory to put final built distributions in "
-                     "[default: dist]"), ]
-
-    def initialize_options(self):
-        self.dist_dir = None
-
-    def finalize_options(self):
-        if self.dist_dir is None:
-            self.dist_dir = "dist"
-
-    def run(self):
-        basepath = os.path.dirname(__file__)
-        testdatapath = os.path.join(basepath, 'pyxrayphasemap', 'testData')
-
-        zipfilename = self.distribution.get_fullname() + '-testData.zip'
-        zipfilepath = os.path.join(self.dist_dir, zipfilename)
-        with zipfile.ZipFile(zipfilepath, 'w') as z:
-            for root, _dirs, files in os.walk(testdatapath):
-                for file in files:
-                    filename = os.path.join(root, file)
-                    arcname = os.path.relpath(filename, basepath)
-                    z.write(filename, arcname)
-
-readmeFilepath = os.path.join(os.path.dirname(__file__), 'README.rst')
-long_description = open(readmeFilepath).read() + '\n\n'
+readme_file_path = os.path.join(os.path.dirname(__file__), 'README.rst')
+long_description = open(readme_file_path).read() + '\n\n'
 
 setup(name="pyxrayphasemap",
-      version='0.2.0',
+      version='0.3.0',
       description="Create phase map from x-ray elemental maps.",
-#      long_description=long_description,
+      long_description=long_description,
       author="Hendrix Demers",
       author_email="hendrix.demers@mail.mcgill.ca",
-      license="GPL v3",
-      classifiers=['Development Status :: 4 - Beta',
+      license="Apache License, Version 2.0",
+      classifiers=['Development Status :: 5 - Production/Stable',
+                   'Environment :: Console',
                    'Intended Audience :: Developers',
                    'Intended Audience :: Science/Research',
-                   'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+                   'License :: OSI Approved :: Apache License, Version 2.0',
                    'Natural Language :: English',
                    'Programming Language :: Python',
                    'Operating System :: OS Independent',
-                   'Topic :: Scientific/Engineering',
-                   'Topic :: Scientific/Engineering :: Physics'],
+                   'Topic :: Scientific/Engineering'],
 
-      packages=find_packages(exclude=['gui',]),
+      packages=find_packages(exclude=['gui', ]),
 
-      include_package_data=False, # Do not include test data
+      include_package_data=False,  # Do not include test data
 
-      install_requires=['Pillow', # Fork of PIL (Python 3 compatible),
+      install_requires=['Pillow',
                         'numpy',
                         'scipy',
                         'h5py',
                         'matplotlib'],
-      # pySpectrumFileFormat
       setup_requires=['nose', 'coverage'],
 
       test_suite='nose.collector',
-
-      cmdclass={'zip_testdata': TestDataCommand},
-)
+      )
