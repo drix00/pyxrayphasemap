@@ -37,7 +37,7 @@ from setuptools import setup, find_packages
 readme_file_path = os.path.join(os.path.dirname(__file__), 'README.rst')
 long_description = open(readme_file_path).read() + '\n\n'
 
-setup(name="pyxrayphasemap",
+setup(name="pyphasemap",
       version='0.3.0',
       description="Create phase map from x-ray elemental maps.",
       long_description=long_description,
