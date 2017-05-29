@@ -26,7 +26,7 @@ Setup pyXRayPhaseMap project.
 import os
 
 # Third party modules.
-from setuptools import setup, find_packages
+from setuptools import setup
 
 # Local modules.
 
@@ -34,13 +34,28 @@ from setuptools import setup, find_packages
 
 # Globals and constants variables.
 
-readme_file_path = os.path.join(os.path.dirname(__file__), 'README.rst')
-long_description = open(readme_file_path).read() + '\n\n'
+with open('README.rst') as readme_file:
+    readme = readme_file.read()
+
+with open('HISTORY.rst') as history_file:
+    history = history_file.read()
+
+requirements = [
+    'Pillow',
+    'numpy',
+    'scipy',
+    'h5py',
+    'matplotlib'
+]
+
+test_requirements = [
+    'nose', 'coverage'
+]
 
 setup(name="pyphasemap",
       version='0.3.0',
       description="Create phase map from x-ray elemental maps.",
-      long_description=long_description,
+      long_description=readme + '\n\n' + history,
       author="Hendrix Demers",
       author_email="hendrix.demers@mail.mcgill.ca",
     url='https://github.com/drix00/xrayphasemap',
