@@ -43,27 +43,27 @@ setup(name="pyphasemap",
       long_description=long_description,
       author="Hendrix Demers",
       author_email="hendrix.demers@mail.mcgill.ca",
-      license="Apache License, Version 2.0",
+    url='https://github.com/drix00/xrayphasemap',
+    packages=[
+        'xrayphasemap',
+    ],
+    package_dir={'xrayphasemap':
+                 'xrayphasemap'},
+    include_package_data=True,
+    install_requires=requirements,
+    license="Apache Software License 2.0",
+    zip_safe=False,
+    keywords='xrayphasemap',
       classifiers=['Development Status :: 5 - Production/Stable',
                    'Environment :: Console',
                    'Intended Audience :: Developers',
                    'Intended Audience :: Science/Research',
-                   'License :: OSI Approved :: Apache License, Version 2.0',
+        'License :: OSI Approved :: Apache Software License',
                    'Natural Language :: English',
                    'Programming Language :: Python',
                    'Operating System :: OS Independent',
                    'Topic :: Scientific/Engineering'],
 
-      packages=find_packages(exclude=['gui', ]),
-
-      include_package_data=False,  # Do not include test data
-
-      install_requires=['Pillow',
-                        'numpy',
-                        'scipy',
-                        'h5py',
-                        'matplotlib'],
-      setup_requires=['nose', 'coverage'],
-
-      test_suite='nose.collector',
+    test_suite='tests',
+    tests_require=test_requirements
       )

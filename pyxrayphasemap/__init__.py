@@ -31,3 +31,6 @@ Create phase map from x-ray elemental maps.
 # Project modules
 
 # Globals and constants variables.
+__author__ = """Hendrix Demers"""
+__email__ = 'hendrix.demers@mail.mcgill.ca'
+__version__ = '0.3.0'
