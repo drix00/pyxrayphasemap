@@ -1,6 +1,10 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """
 .. py:currentmodule:: __init__
+   :synopsis: Create phase map from x-ray elemental maps.
+
 .. moduleauthor:: Hendrix Demers <hendrix.demers@mail.mcgill.ca>
 
 Create phase map from x-ray elemental maps.

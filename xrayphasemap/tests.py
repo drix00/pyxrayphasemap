@@ -1,6 +1,10 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """
 .. py:currentmodule:: tests
+   :synopsis: Regression testing for the project.
+   
 .. moduleauthor:: Hendrix Demers <hendrix.demers@mail.mcgill.ca>
 
 Regression testing for the project.

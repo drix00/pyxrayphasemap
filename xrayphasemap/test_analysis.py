@@ -1,9 +1,13 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """
 .. py:currentmodule:: test_analysis
+   :synopsis: Tests for the module :py:mod:`xrayphasemap.analysis`.
+   
 .. moduleauthor:: Hendrix Demers <hendrix.demers@mail.mcgill.ca>
 
-Tests for the module `analysis`.
+Tests for the module :py:mod:`xrayphasemap.analysis`.
 """
 
 ###############################################################################
@@ -39,7 +43,7 @@ from xrayphasemap.analysis import PhaseAnalysis
 
 class Testanalysis(unittest.TestCase):
     """
-    TestCase class for the module `analysis`.
+    TestCase class for the module :py:mod:`xrayphasemap.analysis`.
     """
 
     def setUp(self):
@@ -88,7 +92,4 @@ class Testanalysis(unittest.TestCase):
 
 if __name__ == '__main__':  # pragma: no cover
     import nose
-    import sys
-    argv = sys.argv
-    argv.append("--cover-package=xrayphasemap.analysis")
-    nose.runmodule(argv=argv)
+    nose.runmodule()

@@ -1,6 +1,10 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """
 .. py:currentmodule:: xrayphasemap.map
+   :synopsis: Map used in the phase analysis module.
+   
 .. moduleauthor:: Hendrix Demers <hendrix.demers@mail.mcgill.ca>
 
 Map used in the phase analysis module.
@@ -30,15 +34,16 @@ import csv
 # Third party modules.
 import numpy as np
 from PIL import Image
-import scipy.ndimage as ndimage
-import matplotlib.pyplot as plt
+from scipy.ndimage import gaussian_filter
 import matplotlib
+import matplotlib.pyplot as plt
 
 # Local modules.
 
 # Project modules
 
 # Globals and constants variables.
+
 
 class PhaseMap(object):
     def __init__(self, phase_map_name, phase_analysis, is_dilation_erosion=False):
@@ -56,7 +61,7 @@ class PhaseMap(object):
     def add_phases(self, label, phases, color_name, union=True):
         self.phases[label] = (phases, color_name, union)
 
-    def display_map(self, label=None, gaussianFilter=False, legend=None, display_now=True):
+    def display_map(self, label=None, gaussian_filter=False, legend=None, display_now=True):
         image = self.get_image(label)
 
         plt.figure()
@@ -67,7 +72,7 @@ class PhaseMap(object):
 
         if label is None:
             if legend is None:
-                patches, labels = self.getLegend()
+                patches, labels = self.get_legend()
             else:
                 patches, labels = legend
             plt.figlegend(patches, labels, 'upper right')
@@ -83,7 +88,8 @@ class PhaseMap(object):
         plt.imshow(image, aspect='equal')
         plt.axis('off')
 
-        patches = [matplotlib.patches.Patch(color="black"), matplotlib.patches.Patch(edgecolor='black', facecolor='white')]
+        patches = [matplotlib.patches.Patch(color="black"),
+                   matplotlib.patches.Patch(edgecolor='black', facecolor='white')]
         labels = ["No phase", "Phases"]
         plt.figlegend(patches, labels, 'upper right')
 
@@ -108,7 +114,7 @@ class PhaseMap(object):
     def show(self):
         plt.show()
 
-    def save_map(self, figures_path, label=None, gaussianFilter=False, legend=None):
+    def save_map(self, figures_path, label=None, gaussian_filter=False, legend=None):
         image = self.get_image(label)
 
         plt.figure()
@@ -119,7 +125,7 @@ class PhaseMap(object):
 
         if label is None:
             if legend is None:
-                patches, labels = self.getLegend()
+                patches, labels = self.get_legend()
             else:
                 patches, labels = legend
             plt.figlegend(patches, labels, 'upper right')
@@ -138,7 +144,8 @@ class PhaseMap(object):
         plt.imshow(image, aspect='equal')
         plt.axis('off')
 
-        patches = [matplotlib.patches.Patch(color="black"), matplotlib.patches.Patch(edgecolor='black', facecolor='white')]
+        patches = [matplotlib.patches.Patch(color="black"),
+                   matplotlib.patches.Patch(edgecolor='black', facecolor='white')]
         labels = ["No phase", "Phases"]
         plt.figlegend(patches, labels, 'upper right')
 
@@ -178,27 +185,27 @@ class PhaseMap(object):
                 row.append(phase_fractions[phase_name])
                 writer.writerow(row)
 
-    def get_image(self, label=None, gaussianFilter=False):
+    def get_image(self, label=None, gaussian_filter=False):
         width = self.phase_analysis.width
         height = self.phase_analysis.height
-        imageData = np.zeros((width, height, 3), dtype=np.float32)
+        image_data = np.zeros((width, height, 3), dtype=np.float32)
 
         if label is None:
             for label in self.phases:
                 phases, color_name, union = self.phases[label]
-                color = self._getRGB(color_name)
+                color = self._get_rgb(color_name)
                 data = self.phase_analysis.get_phase_data(phases, color, self.is_dilation_erosion, union)
-                imageData += data
+                image_data += data
         else:
                 phases, color_name, union = self.phases[label]
-                color = self._getRGB(color_name)
+                color = self._get_rgb(color_name)
                 data = self.phase_analysis.get_phase_data(phases, color, self.is_dilation_erosion, union)
-                imageData += data
+                image_data += data
 
-        image = Image.fromarray(np.uint8(imageData*255.0))
-        if gaussianFilter:
-            imageFiltered = ndimage.gaussian_filter(image, sigma=(1, 1, 0), mode = 'nearest', order=0)
-            image = Image.fromarray(imageFiltered)
+        image = Image.fromarray(np.uint8(image_data*255.0))
+        if gaussian_filter:
+            image_filtered = gaussian_filter(image, sigma=(1, 1, 0), mode='nearest', order=0)
+            image = Image.fromarray(image_filtered)
 
         return image
 
@@ -206,13 +213,13 @@ class PhaseMap(object):
         color = (1, 1, 1)
         width = self.phase_analysis.width
         height = self.phase_analysis.height
-        imageData = np.zeros((width, height, 3), dtype=np.float32)
+        image_data = np.zeros((width, height, 3), dtype=np.float32)
         for label in self.phases:
             phases, _color_name, union = self.phases[label]
             data = self.phase_analysis.get_phase_data(phases, color, self.is_dilation_erosion, union)
-            imageData += data
+            image_data += data
 
-        image = Image.fromarray(np.uint8(imageData*255.0))
+        image = Image.fromarray(np.uint8(image_data*255.0))
 
         return image
 
@@ -220,27 +227,27 @@ class PhaseMap(object):
         color = (1, 1, 1)
         width = self.phase_analysis.width
         height = self.phase_analysis.height
-        imageData = np.zeros((width, height, 3), dtype=np.float32)
+        image_data = np.zeros((width, height, 3), dtype=np.float32)
         for label in self.phases:
             phases, _color_name, union = self.phases[label]
             data = self.phase_analysis.get_phase_data(phases, color, self.is_dilation_erosion, union)
-            imageData += data
+            image_data += data
 
-        logging.debug(imageData.shape)
+        logging.debug(image_data.shape)
 
-        logging.debug(np.min(imageData))
-        logging.debug(np.max(imageData))
+        logging.debug(np.min(image_data))
+        logging.debug(np.max(image_data))
 
-        mask = imageData > 1
+        mask = image_data > 1
         logging.debug(np.min(mask))
         logging.debug(np.max(mask))
 
-        imageData[~mask] = 0
+        image_data[~mask] = 0
 
-        logging.debug(np.min(imageData))
-        logging.debug(np.max(imageData))
+        logging.debug(np.min(image_data))
+        logging.debug(np.max(image_data))
 
-        image = Image.fromarray(np.uint8(imageData*255.0))
+        image = Image.fromarray(np.uint8(image_data*255.0))
 
         return image
 
@@ -254,14 +261,14 @@ class PhaseMap(object):
 
         return phase_fractions
 
-    def getLegend(self):
+    def get_legend(self):
         patches = []
         labels = []
 
         for label in self.phases:
             labels.append(label)
             _phase, color_name, _union = self.phases[label]
-            color = self._getRGB(color_name)
+            color = self._get_rgb(color_name)
             if color == (1, 1, 1):
                 patches.append(matplotlib.patches.Patch(edgecolor='black', facecolor='white'))
             else:
@@ -269,16 +276,16 @@ class PhaseMap(object):
 
         return patches, labels
 
-    def _getRGB(self, name):
+    def _get_rgb(self, name):
         rgb = matplotlib.colors.hex2color(matplotlib.colors.cnames[name])
         return rgb
 
-    def saveImage(self, file_path, gaussianFilter=False):
-        image = self.get_image(gaussianFilter)
+    def save_image(self, file_path, gaussian_filter=False):
+        image = self.get_image(gaussian_filter)
         image.save(file_path)
 
-    def showImage(self, file_path, gaussianFilter=False, legend=None, save_only=False):
-        image = self.get_image(gaussianFilter)
+    def show_image(self, file_path, gaussian_filter=False, legend=None, save_only=False):
+        image = self.get_image(gaussian_filter)
 
         plt.figure()
 
@@ -286,7 +293,7 @@ class PhaseMap(object):
         plt.axis('off')
 
         if legend is None:
-            patches, labels = self.getLegend()
+            patches, labels = self.get_legend()
         else:
             patches, labels = legend
         plt.figlegend(patches, labels, 'upper right')
@@ -295,8 +302,8 @@ class PhaseMap(object):
         if save_only:
             plt.close()
 
-    def createNoPhaseImage(self, file_path):
-        image = self.getNoPhaseImage()
+    def create_no_phase_image(self, file_path):
+        image = self.get_no_phase_image()
 
         plt.figure()
 
@@ -308,8 +315,8 @@ class PhaseMap(object):
         plt.figlegend(patches, labels, 'upper right')
         plt.savefig(file_path)
 
-    def createOverlapPhaseImage(self, file_path):
-        image = self.getOverlapPhaseImage()
+    def create_overlap_phase_image(self, file_path):
+        image = self.get_overlap_phase_image()
 
         plt.figure()
 
@@ -321,10 +328,11 @@ class PhaseMap(object):
         plt.figlegend(patches, labels, 'upper right')
         plt.savefig(file_path)
 
-def savePhaseOnly(phaseMap, phase, graphicPath, color):
-    phaseImage = PhaseMap(phaseMap.width, phaseMap.height)
 
-    phaseImage.add_phase(phase, color)
-    filename= r'%s_%s_%s.png' % (phaseMap.sampleName, phaseMap.dataType, phase.name)
-    file_path = os.path.join(graphicPath, filename)
-    phaseImage.saveImage(file_path)
+def save_phase_only(phase_map, phase, graphic_path, color):
+    phase_image = PhaseMap(phase_map.width, phase_map.height)
+
+    phase_image.add_phase(phase, color)
+    filename = r'%s_%s_%s.png' % (phase_map.sampleName, phase_map.dataType, phase.name)
+    file_path = os.path.join(graphic_path, filename)
+    phase_image.save_image(file_path)

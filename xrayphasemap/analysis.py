@@ -197,7 +197,7 @@ class PhaseAnalysis(object):
         logging.error("Unkown extension %s for filepath %s", extension, filepath)
 
     def _readDataFromTextFile(self, filepath):
-        data = np.loadtxt(open(filepath,"r"),delimiter=";")
+        data = np.loadtxt(open(filepath, "r"), delimiter=";")
         return data
 
     def _readDataFromTSVFile(self, filepath):
@@ -205,7 +205,7 @@ class PhaseAnalysis(object):
         lines = text.split(b'\r')
         numberColumns = len(lines[0].strip().split(b'\t'))
         numberRows = len(lines) - 1
-        data = np.loadtxt(open(filepath,"r"))
+        data = np.loadtxt(open(filepath, "r"))
         print(numberColumns, numberRows)
         print(data.shape)
         print(data.size)

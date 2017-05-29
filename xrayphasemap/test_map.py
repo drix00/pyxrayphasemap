@@ -1,9 +1,13 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """
 .. py:currentmodule:: test_map
+   :synopsis: Tests for the module :py:mod:`xrayphasemap.map`.
+   
 .. moduleauthor:: Hendrix Demers <hendrix.demers@mail.mcgill.ca>
 
-Tests for the module `map`.
+Tests for the module :py:mod:`xrayphasemap.map`.
 """
 
 ###############################################################################
@@ -37,7 +41,7 @@ import xrayphasemap.map
 
 class Testmap(unittest.TestCase):
     """
-    TestCase class for the module `map`.
+    TestCase class for the module :py:mod:`xrayphasemap.map`.
     """
 
     def setUp(self):
@@ -63,7 +67,4 @@ class Testmap(unittest.TestCase):
 
 if __name__ == '__main__':  # pragma: no cover
     import nose
-    import sys
-    argv = sys.argv
-    argv.append("--cover-package=xrayphasemap.map")
-    nose.runmodule(argv=argv)
+    nose.runmodule()

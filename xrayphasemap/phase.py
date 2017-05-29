@@ -1,6 +1,10 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """
 .. py:currentmodule:: xrayphasemap.phase
+   :synopsis: Phase to be used in a phase map.
+   
 .. moduleauthor:: Hendrix Demers <hendrix.demers@mail.mcgill.ca>
 
 Phase to be used in a phase map.
@@ -32,6 +36,7 @@ Phase to be used in a phase map.
 
 # Globals and constants variables.
 
+
 class Phase(object):
     def __init__(self, name):
         self.name = name
@@ -45,6 +50,7 @@ class Phase(object):
     @property
     def name(self):
         return self._name
+
     @name.setter
     def name(self, name):
         self._name = name
