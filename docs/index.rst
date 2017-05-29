@@ -1,5 +1,7 @@
 Welcome to pyXRayPhaseMap's documentation!
-======================================
+==========================================
+
+Create phase map from x-ray elemental maps.
 
 Contents:
 
@@ -9,6 +11,7 @@ Contents:
    readme
    installation
    usage
+   code
    contributing
    authors
    history

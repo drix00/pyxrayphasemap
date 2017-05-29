@@ -1,4 +1,4 @@
-pyxrayphasemap package
+xrayphasemap package
 ======================
 
 Subpackages
@@ -6,63 +6,61 @@ Subpackages
 
 .. toctree::
 
-    pyxrayphasemap.gui
-
 Submodules
 ----------
 
-pyxrayphasemap.analysis module
+xrayphasemap.analysis module
 ------------------------------
 
-.. automodule:: pyxrayphasemap.analysis
+.. automodule:: xrayphasemap.analysis
     :members:
     :undoc-members:
     :show-inheritance:
 
-pyxrayphasemap.map module
+xrayphasemap.map module
 -------------------------
 
-.. automodule:: pyxrayphasemap.map
+.. automodule:: xrayphasemap.map
     :members:
     :undoc-members:
     :show-inheritance:
 
-pyxrayphasemap.phase module
+xrayphasemap.phase module
 ---------------------------
 
-.. automodule:: pyxrayphasemap.phase
+.. automodule:: xrayphasemap.phase
     :members:
     :undoc-members:
     :show-inheritance:
 
-pyxrayphasemap.test_analysis module
+xrayphasemap.test_analysis module
 -----------------------------------
 
-.. automodule:: pyxrayphasemap.test_analysis
+.. automodule:: xrayphasemap.test_analysis
     :members:
     :undoc-members:
     :show-inheritance:
 
-pyxrayphasemap.test_map module
+xrayphasemap.test_map module
 ------------------------------
 
-.. automodule:: pyxrayphasemap.test_map
+.. automodule:: xrayphasemap.test_map
     :members:
     :undoc-members:
     :show-inheritance:
 
-pyxrayphasemap.test_phase module
+xrayphasemap.test_phase module
 --------------------------------
 
-.. automodule:: pyxrayphasemap.test_phase
+.. automodule:: xrayphasemap.test_phase
     :members:
     :undoc-members:
     :show-inheritance:
 
-pyxrayphasemap.tests module
+xrayphasemap.tests module
 ---------------------------
 
-.. automodule:: pyxrayphasemap.tests
+.. automodule:: xrayphasemap.tests
     :members:
     :undoc-members:
     :show-inheritance:
@@ -71,7 +69,7 @@ pyxrayphasemap.tests module
 Module contents
 ---------------
 
-.. automodule:: pyxrayphasemap
+.. automodule:: xrayphasemap
     :members:
     :undoc-members:
     :show-inheritance:
