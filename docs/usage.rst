@@ -33,7 +33,7 @@ a label and a filepath to the data::
     dataType = DATA_TYPE_INTENSITY_DECONVOLUTION
     label = "C"
     filepath = r"D:\results\experiments\1-LFS4-2_countsDeconvolution_C.txt"
-    phase_analysis.readElementData(data_type, label, filepath)
+    phase_analysis.read_element_data(data_type, label, filepath)
 
 You are going to use the data type and label later to define each phase.
 The following data type are define, but you can define your own data type:
@@ -51,12 +51,12 @@ To add more than one file you can use a loop::
     for label in labels:
         filename = "1-LFS4-2_countsDeconvolution_%s.txt" % (label)
         filepath = os.path.join(basepath, filename)
-        phase_analysis.readElementData(dataType, label, filepath)
+        phase_analysis.read_element_data(dataType, label, filepath)
 
 You can also add a micrograph as data::
 
    filepath = r"D:\results\experiments\1-LFS4-2_countsDeconvolution_SE.txt"
-   phase_analysis.readMicrographData(DATA_TYPE_SE, filepath)
+   phase_analysis.read_micrograph_data(DATA_TYPE_SE, filepath)
 
 The following micrograph data are define, but you can define your own data type as the first parameter is just
 a string label:
@@ -142,6 +142,7 @@ Than add it to :py:class:`~pyxrayphasemap.map.PhaseMap` object with a valid
 
     phase_map.add_phase(phase, "red")
 
- Now you can display the phase map::
+Now you can display the phase map::
 
     phase_map.display_map()
+

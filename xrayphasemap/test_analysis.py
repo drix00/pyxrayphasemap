@@ -36,7 +36,8 @@ import os.path
 import pyHendrixDemersTools.Files as Files
 
 # Project modules
-from xrayphasemap.analysis import PhaseAnalysis
+from xrayphasemap.analysis import PhaseAnalysis, _read_data_from_text_file
+
 
 # Globals and constants variables.
 
@@ -80,12 +81,12 @@ class Testanalysis(unittest.TestCase):
 
     def test__readDataFromTextFile(self):
         """
-        Tests for method :py:meth:`_readDataFromTextFile`.
+        Tests for method :py:meth:`_read_data_from_text_file`.
         """
 
         phase_analysis = PhaseAnalysis("Dummy_file_path")
         file_path = os.path.join(self.test_data_path, "bruker", "good_text_export.txt")
-        data = phase_analysis._readDataFromTextFile(file_path)
+        data = _read_data_from_text_file(file_path)
 
         print(data.shape)
 #        self.fail("Test if the testcase is working.")

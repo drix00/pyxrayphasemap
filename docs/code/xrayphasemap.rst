@@ -1,5 +1,5 @@
 xrayphasemap package
-======================
+====================
 
 Subpackages
 -----------
@@ -10,7 +10,7 @@ Submodules
 ----------
 
 xrayphasemap.analysis module
-------------------------------
+----------------------------
 
 .. automodule:: xrayphasemap.analysis
     :members:
@@ -18,7 +18,7 @@ xrayphasemap.analysis module
     :show-inheritance:
 
 xrayphasemap.map module
--------------------------
+-----------------------
 
 .. automodule:: xrayphasemap.map
     :members:
@@ -26,7 +26,7 @@ xrayphasemap.map module
     :show-inheritance:
 
 xrayphasemap.phase module
----------------------------
+-------------------------
 
 .. automodule:: xrayphasemap.phase
     :members:
@@ -34,7 +34,7 @@ xrayphasemap.phase module
     :show-inheritance:
 
 xrayphasemap.test_analysis module
------------------------------------
+---------------------------------
 
 .. automodule:: xrayphasemap.test_analysis
     :members:
@@ -42,7 +42,7 @@ xrayphasemap.test_analysis module
     :show-inheritance:
 
 xrayphasemap.test_map module
-------------------------------
+----------------------------
 
 .. automodule:: xrayphasemap.test_map
     :members:
@@ -50,7 +50,7 @@ xrayphasemap.test_map module
     :show-inheritance:
 
 xrayphasemap.test_phase module
---------------------------------
+------------------------------
 
 .. automodule:: xrayphasemap.test_phase
     :members:
@@ -58,7 +58,7 @@ xrayphasemap.test_phase module
     :show-inheritance:
 
 xrayphasemap.tests module
----------------------------
+-------------------------
 
 .. automodule:: xrayphasemap.tests
     :members:

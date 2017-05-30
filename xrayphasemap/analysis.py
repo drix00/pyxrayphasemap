@@ -1,6 +1,10 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """
 .. py:currentmodule:: xrayphasemap.analysis
+   :synopsis: Create phase map from x-ray map data.
+   
 .. moduleauthor:: Hendrix Demers <hendrix.demers@mail.mcgill.ca>
 
 Create phase map from x-ray map data.
@@ -53,125 +57,79 @@ DATA_TYPE_TOTAL_PEAK_INTENSITY = "Total peak intensity"
 
 GROUP_MICROGRAPH = "micrograph"
 
+
 class PhaseAnalysis(object):
     def __init__(self, project_filepath):
-        self.h5filepath = project_filepath
+        self.h5file_path = project_filepath
 
         self.overwrite = False
 
-        self.create_color_maps()
+        create_color_maps()
         self.cm = plt.cm.get_cmap('YlOrRd')
 
         self.width = None
         self.height = None
 
-    def create_color_maps(self):
-        number_colors = 20
+    def read_element_data(self, data_type, label, file_path):
+        self.width, self.height = self._read_project_file(data_type, label, file_path)
 
-        cdict = {'red': ((0.0, 0.0, 0.0),
-                         (1.0, 0.0, 0.0)),
-
-                 'green': ((0.0, 0.0, 0.0),
-                         (1.0, 0.0, 0.0)),
-
-                 'blue': ((0.0, 0.0, 0.0),
-                         (1.0, 1.0, 1.0))
-        }
-        plt.register_cmap(name='cmBlue', data=cdict, lut=number_colors)
-
-        cdict = {'red': ((0.0, 0.0, 0.0),
-                         (1.0, 0.0, 0.0)),
-
-                 'green': ((0.0, 0.0, 0.0),
-                         (1.0, 1.0, 1.0)),
-
-                 'blue': ((0.0, 0.0, 0.0),
-                         (1.0, 0.0, 0.0))
-        }
-        plt.register_cmap(name='cmGreen', data=cdict, lut=number_colors)
-
-        cdict = {'red': ((0.0, 0.0, 0.0),
-                         (1.0, 1.0, 1.0)),
-
-                 'green': ((0.0, 0.0, 0.0),
-                         (1.0, 0.0, 0.0)),
-
-                 'blue': ((0.0, 0.0, 0.0),
-                         (1.0, 0.0, 0.0))
-        }
-        plt.register_cmap(name='cmRed', data=cdict, lut=number_colors)
-
-        cdict = {'red': ((0.0, 0.0, 0.0),
-                         (1.0, 1.0, 1.0)),
-
-                 'green': ((0.0, 0.0, 0.0),
-                         (1.0, 0.0, 1.0)),
-
-                 'blue': ((0.0, 0.0, 0.0),
-                         (1.0, 1.0, 1.0))
-        }
-        plt.register_cmap(name='cmPink', data=cdict, lut=number_colors)
-
-    def readElementData(self, data_type, label, filepath):
-        self.width, self.height = self._readProjectFile(data_type, label, filepath)
-
-    def readMicrographData(self, micrograph_type, filepath):
-        data = self._readData(filepath)
+    def read_micrograph_data(self, micrograph_type, file_path):
+        data = self._read_data(file_path)
         logging.debug(np.min(data))
         logging.debug(np.max(data))
 
         h5file = self._open_hdf5_file()
 
         if GROUP_MICROGRAPH not in h5file:
-            groupName = "/%s" % (GROUP_MICROGRAPH)
-            dataTypeGroup = h5file.create_group(groupName)
+            group_name = "/{}".format(GROUP_MICROGRAPH)
+            data_type_group = h5file.create_group(group_name)
         else:
-            dataTypeGroup = h5file[GROUP_MICROGRAPH]
+            data_type_group = h5file[GROUP_MICROGRAPH]
 
-        logging.debug(dataTypeGroup.name)
-        logging.debug(dataTypeGroup.parent)
-        if micrograph_type not in dataTypeGroup:
-            dset = dataTypeGroup.create_dataset(micrograph_type, data.shape, dtype=np.float32)
-            dset[:,:] = data
-            logging.debug(dset)
+        logging.debug(data_type_group.name)
+        logging.debug(data_type_group.parent)
+        if micrograph_type not in data_type_group:
+            dataset = data_type_group.create_dataset(micrograph_type, data.shape, dtype=np.float32)
+            dataset[:,:] = data
+            logging.debug(dataset)
             h5file.flush()
         else:
-            dset = dataTypeGroup[micrograph_type]
-            dset[:,:] = data
-            logging.debug(dset)
+            dataset = data_type_group[micrograph_type]
+            dataset[:, :] = data
+            logging.debug(dataset)
             h5file.flush()
 
         h5file.close()
 
-    def _readProjectFile(self, data_type, label, filepath):
+    def _read_project_file(self, data_type, label, file_path):
         h5file = self._open_hdf5_file()
 
         if data_type not in h5file:
-            groupName = "/%s" % (data_type)
-            dataTypeGroup = h5file.create_group(groupName)
+            group_name = "/{}".format(data_type)
+            data_type_group = h5file.create_group(group_name)
         else:
-            dataTypeGroup = h5file[data_type]
+            data_type_group = h5file[data_type]
 
-        logging.debug(dataTypeGroup.name)
-        logging.debug(dataTypeGroup.parent)
+        logging.debug(data_type_group.name)
+        logging.debug(data_type_group.parent)
 
-        if label not in dataTypeGroup:
+        if label not in data_type_group:
             try:
-                elementData = self._readData(filepath)
-                w, h = elementData.shape
-                dset = dataTypeGroup.create_dataset(label, elementData.shape, dtype=np.float32)
-                dset[:,:] = elementData
-                logging.debug(dset)
+                element_data = _read_data(file_path)
+                w, h = element_data.shape
+                dataset = data_type_group.create_dataset(label, element_data.shape, dtype=np.float32)
+                dataset[:, :] = element_data
+                logging.debug(dataset)
                 h5file.flush()
             except ValueError as message:
-                logging.error("%s for filepath %s", message, filepath)
+                logging.error("%s for file_path %s", message, file_path)
             except IOError:
-                logging.warning("Filepath does not exist %s", filepath)
+                logging.warning("File path does not exist %s", file_path)
 
         else:
-            dset = dataTypeGroup[label]
-            elementData = np.array(dset)
-            w, h = elementData.shape
+            dataset = data_type_group[label]
+            element_data = np.array(dataset)
+            w, h = element_data.shape
 
         h5file.close()
 
@@ -179,71 +137,36 @@ class PhaseAnalysis(object):
 
     def _open_hdf5_file(self):
         if self.overwrite:
-            h5file = h5py.File(self.h5filepath, 'w')
+            h5file = h5py.File(self.h5file_path, 'w')
         else:
-            h5file = h5py.File(self.h5filepath, 'a')
+            h5file = h5py.File(self.h5file_path, 'a')
 
         return h5file
 
-    def _readData(self, filepath):
-        _basename, extension = os.path.splitext(filepath)
-        if extension == ".tif":
-            return self._readDataFromImageFile(filepath)
-        elif extension == ".txt":
-            return self._readDataFromTextFile(filepath)
-        elif extension == ".tsv":
-            return self._readDataFromTSVFile(filepath)
-
-        logging.error("Unkown extension %s for filepath %s", extension, filepath)
-
-    def _readDataFromTextFile(self, filepath):
-        data = np.loadtxt(open(filepath, "r"), delimiter=";")
-        return data
-
-    def _readDataFromTSVFile(self, filepath):
-        text = open(filepath,"rb").read()
-        lines = text.split(b'\r')
-        numberColumns = len(lines[0].strip().split(b'\t'))
-        numberRows = len(lines) - 1
-        data = np.loadtxt(open(filepath, "r"))
-        print(numberColumns, numberRows)
-        print(data.shape)
-        print(data.size)
-        data.shape = (numberRows, numberColumns)
-        return data
-
-    def _readDataFromImageFile(self, Filename):
-        Im = Image.open(Filename)
-        arr = np.array(Im)
-        return arr
-
-    def show(self):
-        plt.show()
-
     def display_histogram_one(self, data_type, label, num_bins=50, display_now=True):
-        with h5py.File(self.h5filepath, 'r') as h5file:
-            elementData = self._getData(h5file, data_type)
+        with h5py.File(self.h5file_path, 'r') as h5file:
+            element_data = _get_data(h5file, data_type)
 
-            data = elementData[label]
+            data = element_data[label]
             _figure = self._create_histogram_figure(data_type, label, data, num_bins)
 
             if display_now:
-                self.show()
+                show()
 
     def save_histogram_one(self, data_type, label, figure_path, num_bins=50, display_now=True):
-        with h5py.File(self.h5filepath, 'r') as h5file:
-            elementData = self._getData(h5file, data_type)
+        with h5py.File(self.h5file_path, 'r') as h5file:
+            element_data = _get_data(h5file, data_type)
 
-            data = elementData[label]
+            data = element_data[label]
             figure = self._create_histogram_figure(data_type, label, data, num_bins)
 
-            filename = "Histogram_%s_%s.png" % (data_type, label)
-            filepath = os.path.join(figure_path, filename)
-            figure.savefig(filepath)
+            file_name = "Histogram_%s_%s.png" % (data_type, label)
+            file_path = os.path.join(figure_path, file_name)
+            figure.savefig(file_path)
             plt.close()
 
     def display_histogram_all(self, data_type=None, num_bins=50, display_now=True):
-        with h5py.File(self.h5filepath, 'r') as h5file:
+        with h5py.File(self.h5file_path, 'r') as h5file:
             if data_type is None:
                 for dataTypeGroup in h5file:
                     for label in h5file[dataTypeGroup]:
@@ -256,29 +179,29 @@ class PhaseAnalysis(object):
                     _figure = self._create_histogram_figure(data_type, label, data, num_bins)
 
         if display_now:
-            self.show()
+            show()
 
     def save_histogram_all(self, figure_path, data_type=None, num_bins=50, display_now=True):
-        with h5py.File(self.h5filepath, 'r') as h5file:
+        with h5py.File(self.h5file_path, 'r') as h5file:
             if data_type is None:
-                for dataTypeGroup in h5file:
-                    for label in h5file[dataTypeGroup]:
-                        data = h5file[dataTypeGroup][label][...]
-                        figure = self._create_histogram_figure(dataTypeGroup, label, data, num_bins)
+                for data_type_group in h5file:
+                    for label in h5file[data_type_group]:
+                        data = h5file[data_type_group][label][...]
+                        figure = self._create_histogram_figure(data_type_group, label, data, num_bins)
 
-                        filename = "Histogram_%s_%s.png" % (dataTypeGroup, label)
-                        filepath = os.path.join(figure_path, filename)
-                        figure.savefig(filepath)
+                        file_name = "Histogram_%s_%s.png" % (data_type_group, label)
+                        file_path = os.path.join(figure_path, file_name)
+                        figure.savefig(file_path)
                         plt.close()
             else:
-                dataTypeGroup = h5file[data_type]
-                for label in dataTypeGroup:
-                    data = dataTypeGroup[label][...]
+                data_type_group = h5file[data_type]
+                for label in data_type_group:
+                    data = data_type_group[label][...]
                     figure = self._create_histogram_figure(data_type, label, data, num_bins)
 
-                    filename = "Histogram_%s_%s.png" % (data_type, label)
-                    filepath = os.path.join(figure_path, filename)
-                    figure.savefig(filepath)
+                    file_name = "Histogram_%s_%s.png" % (data_type, label)
+                    file_path = os.path.join(figure_path, file_name)
+                    figure.savefig(file_path)
                     plt.close()
 
     def _create_histogram_figure(self, data_type, label, data, num_bins=50):
@@ -292,13 +215,13 @@ class PhaseAnalysis(object):
         ax1.axis('off')
         fig.colorbar(image)
 
-        # Get the histogramp
+        # Get the histogram
         Y, X = np.histogram(data, num_bins, normed=True)
         x_span = X.max() - X.min()
         C = [self.cm(((x-X.min())/x_span)) for x in X]
 
         ax0.bar(X[1:-1], Y[1:], color=C, width=X[1]-X[0])
-        #ax0.hist(data.flatten(), num_bins, normed=1, facecolor='green', alpha=0.5)
+        # ax0.hist(data.flatten(), num_bins, normed=1, facecolor='green', alpha=0.5)
         ax0.set_xlabel('Value')
         ax0.set_ylabel('Probability')
 
@@ -308,150 +231,141 @@ class PhaseAnalysis(object):
 
     def save_map_tiff(self, data_type, label, figures_path, color):
         cm = plt.get_cmap(color)
-        with h5py.File(self.h5filepath, 'r') as h5file:
-            dataTypeGroup = h5file[data_type]
+        with h5py.File(self.h5file_path, 'r') as h5file:
+            data_type_group = h5file[data_type]
 
-            data = dataTypeGroup[label][...]
+            data = data_type_group[label][...]
 
             filename = "map_%s_%s.tif" % (data_type, label)
-            filepath = os.path.join(figures_path, filename)
-            plt.imsave(filepath, data, cmap=cm)
+            file_path = os.path.join(figures_path, filename)
+            plt.imsave(file_path, data, cmap=cm)
 
-    def saveMicrographs_tif(self, graphicPath, basename):
-        with h5py.File(self.h5filepath, 'r') as h5file:
-            dataTypeGroup = h5file[GROUP_MICROGRAPH]
+    def save_micrographs_tif(self, graphic_path, basename):
+        with h5py.File(self.h5file_path, 'r') as h5file:
+            data_type_group = h5file[GROUP_MICROGRAPH]
 
-            for micrographType in dataTypeGroup:
-                data = dataTypeGroup[micrographType][...]
+            for micrographType in data_type_group:
+                data = data_type_group[micrographType][...]
 
                 image = Image.fromarray(np.uint8(data*255.0/np.max(data)))
                 filename = "%s_%s.png" % (basename, micrographType)
-                filepath = os.path.join(graphicPath, filename)
-                image.save(filepath)
+                file_path = os.path.join(graphic_path, filename)
+                image.save(file_path)
 
-    def computeFratio(self, inputDatatype, weightType=None):
-        if weightType is not None:
-            outputDatatype = DATA_TYPE_FRATIO + weightType
+    def compute_fratio(self, input_data_type, weight_type=None):
+        if weight_type is not None:
+            output_data_type = DATA_TYPE_FRATIO + weight_type
         else:
-            outputDatatype = DATA_TYPE_FRATIO
+            output_data_type = DATA_TYPE_FRATIO
 
-        with h5py.File(self.h5filepath, 'a') as h5file:
-            if outputDatatype not in h5file:
-                groupName = "/%s" % (outputDatatype)
-                dataTypeGroup = h5file.create_group(groupName)
+        with h5py.File(self.h5file_path, 'a') as h5file:
+            if output_data_type not in h5file:
+                group_name = "/{}".format(output_data_type)
+                data_type_group = h5file.create_group(group_name)
             else:
-                dataTypeGroup = h5file[outputDatatype]
+                data_type_group = h5file[output_data_type]
 
-            logging.info(outputDatatype)
+            logging.info(output_data_type)
 
-            elementData = self._getData(h5file, inputDatatype)
+            element_data = _get_data(h5file, input_data_type)
 
-            first_element = list(elementData.values())[0]
-            totalIntensity = np.zeros_like(first_element)
+            first_element = list(element_data.values())[0]
+            total_intensity = np.zeros_like(first_element)
 
-            for label in elementData:
-                totalIntensity += elementData[label]
+            for label in element_data:
+                total_intensity += element_data[label]
 
-            logging.debug(np.min(totalIntensity))
-            logging.debug(np.max(totalIntensity))
+            logging.debug(np.min(total_intensity))
+            logging.debug(np.max(total_intensity))
 
-            if weightType is not None:
-                weight = h5file[GROUP_MICROGRAPH][weightType][...]
+            if weight_type is not None:
+                weight = h5file[GROUP_MICROGRAPH][weight_type][...]
                 weight /= np.max(weight)
             else:
                 weight = 1.0
 
-            for label in elementData:
-                if label not in dataTypeGroup:
-                    dset = dataTypeGroup.create_dataset(label, totalIntensity.shape, dtype=np.float32)
+            for label in element_data:
+                if label not in data_type_group:
+                    dataset = data_type_group.create_dataset(label, total_intensity.shape, dtype=np.float32)
                 else:
-                    dset = dataTypeGroup[label]
+                    dataset = data_type_group[label]
 
-                data = weight*elementData[label] / totalIntensity
+                data = weight*element_data[label] / total_intensity
                 data[np.isnan(data)] = 0
                 logging.debug(np.max(data))
-                dset[:,:] = data
+                dataset[:, :] = data
 
-    def computeTotalPeakIntensity(self, inputDatatype):
-        outputDatatype = GROUP_MICROGRAPH
+    def compute_total_peak_intensity(self, input_data_type):
+        output_data_type = GROUP_MICROGRAPH
 
-        with h5py.File(self.h5filepath, 'a') as h5file:
-            if outputDatatype not in h5file:
-                groupName = "/%s" % (outputDatatype)
-                dataTypeGroup = h5file.create_group(groupName)
+        with h5py.File(self.h5file_path, 'a') as h5file:
+            if output_data_type not in h5file:
+                group_name = "/{}".format(output_data_type)
+                data_type_group = h5file.create_group(group_name)
             else:
-                dataTypeGroup = h5file[outputDatatype]
+                data_type_group = h5file[output_data_type]
 
-            elementData = self._getData(h5file, inputDatatype)
+            element_data = _get_data(h5file, input_data_type)
 
-            totalIntensity = np.zeros_like(elementData[self.elements[0]])
+            total_intensity = np.zeros_like(element_data[self.elements[0]])
 
             for symbol in self.elements:
-                if symbol in elementData:
-                    totalIntensity += elementData[symbol]
+                if symbol in element_data:
+                    total_intensity += element_data[symbol]
 
-            logging.debug(np.min(totalIntensity))
-            logging.debug(np.max(totalIntensity))
+            logging.debug(np.min(total_intensity))
+            logging.debug(np.max(total_intensity))
 
-            totalIntensity = (totalIntensity - np.min(totalIntensity))  / (np.max(totalIntensity) - np.min(totalIntensity))
+            total_intensity = (total_intensity - np.min(total_intensity))  / (np.max(total_intensity) - np.min(total_intensity))
 
-            if DATA_TYPE_TOTAL_PEAK_INTENSITY not in dataTypeGroup:
-                dset = dataTypeGroup.create_dataset(DATA_TYPE_TOTAL_PEAK_INTENSITY, totalIntensity.shape, dtype=np.float32)
+            if DATA_TYPE_TOTAL_PEAK_INTENSITY not in data_type_group:
+                dataset = data_type_group.create_dataset(DATA_TYPE_TOTAL_PEAK_INTENSITY, total_intensity.shape, dtype=np.float32)
             else:
-                dset = dataTypeGroup[DATA_TYPE_TOTAL_PEAK_INTENSITY]
-            dset[:,:] = totalIntensity
+                dataset = data_type_group[DATA_TYPE_TOTAL_PEAK_INTENSITY]
+            dataset[:, :] = total_intensity
 
-    def computeElementRatio(self, inputDatatype):
-        outputDatatype = DATA_TYPE_ELEMENT_RATIO
+    def compute_element_ratio(self, input_data_type):
+        output_data_type = DATA_TYPE_ELEMENT_RATIO
 
-        with h5py.File(self.h5filepath, 'a') as h5file:
-            if outputDatatype not in h5file:
-                groupName = "/%s" % (outputDatatype)
-                dataTypeGroup = h5file.create_group(groupName)
+        with h5py.File(self.h5file_path, 'a') as h5file:
+            if output_data_type not in h5file:
+                group_name = "/{}".format(output_data_type)
+                data_type_group = h5file.create_group(group_name)
             else:
-                dataTypeGroup = h5file[outputDatatype]
+                data_type_group = h5file[output_data_type]
 
-            logging.info(outputDatatype)
+            logging.info(output_data_type)
 
-            elementData = self._getData(h5file, inputDatatype)
+            element_data = _get_data(h5file, input_data_type)
 
-            for label_A in elementData:
-                for label_B in elementData:
+            for label_A in element_data:
+                for label_B in element_data:
                     if label_A is not label_B:
                         label_A_B = "%s_%s" % (label_A, label_B)
-                        if label_A_B not in dataTypeGroup:
-                            dset = dataTypeGroup.create_dataset(label_A_B, elementData[label_A].shape, dtype=np.float32)
+                        if label_A_B not in data_type_group:
+                            dataset = data_type_group.create_dataset(label_A_B, element_data[label_A].shape, dtype=np.float32)
                         else:
-                            dset = dataTypeGroup[label_A_B]
+                            dataset = data_type_group[label_A_B]
 
-                        data = elementData[label_A] / elementData[label_B]
+                        data = element_data[label_A] / element_data[label_B]
                         data[np.isnan(data)] = 0
                         logging.info(np.max(data))
                         logging.info(np.min(data))
-                        dset[:,:] = data
+                        dataset[:, :] = data
 
     def get_data(self, data_type, label):
-        with h5py.File(self.h5filepath, 'r') as h5file:
-            dataTypeGroup = h5file[data_type]
+        with h5py.File(self.h5file_path, 'r') as h5file:
+            data_type_group = h5file[data_type]
 
-            data = dataTypeGroup[label][...]
+            data = data_type_group[label][...]
 
             return data
 
-    def getElementData(self, datatype):
-        with h5py.File(self.h5filepath, 'r') as h5file:
-            elementData = self._getData(h5file, datatype)
+    def get_element_data(self, data_type):
+        with h5py.File(self.h5file_path, 'r') as h5file:
+            element_data = _get_data(h5file, data_type)
 
-        return elementData
-
-    def _getData(self, h5file, datatype):
-        dataTypeGroup = h5file[datatype]
-
-        elementData = {}
-        for label in dataTypeGroup:
-            elementData[label] = dataTypeGroup[label][...]
-
-        return elementData
+        return element_data
 
     def get_phase_data(self, phases, color, is_dilation_erosion=False, union=True):
         """
@@ -497,13 +411,13 @@ class PhaseAnalysis(object):
                 compound_index &= phase_compound_index
 
         if is_dilation_erosion:
-            struct = ndimage.generate_binary_structure(2, 2)
+            structure = ndimage.generate_binary_structure(2, 2)
 
-            compound_index = ndimage.binary_closing(compound_index, struct, iterations=1)
-            compound_index = ndimage.binary_opening(compound_index, struct, iterations=1)
-            compound_index = ndimage.binary_closing(compound_index, struct, iterations=2)
-            compound_index = ndimage.binary_opening(compound_index, struct, iterations=2)
-            compound_index = ndimage.binary_closing(compound_index, struct, iterations=1)
+            compound_index = ndimage.binary_closing(compound_index, structure, iterations=1)
+            compound_index = ndimage.binary_opening(compound_index, structure, iterations=1)
+            compound_index = ndimage.binary_closing(compound_index, structure, iterations=2)
+            compound_index = ndimage.binary_opening(compound_index, structure, iterations=2)
+            compound_index = ndimage.binary_closing(compound_index, structure, iterations=1)
 
         return compound_index
 
@@ -512,36 +426,94 @@ class PhaseAnalysis(object):
 
         for data_type, label in phase.conditions:
             data = self.get_data(data_type, label)
-            thresholdMin, thresholdMax = phase.conditions[(data_type, label)]
-            compound_index &= data >= thresholdMin
-            compound_index &= data <= thresholdMax
+            threshold_min, threshold_max = phase.conditions[(data_type, label)]
+            compound_index &= data >= threshold_min
+            compound_index &= data <= threshold_max
 
         return compound_index
 
-    @property
-    def overwrite(self):
-        return self._overwrite
-    @overwrite.setter
-    def overwrite(self, overwrite):
-        self._overwrite = overwrite
 
-    @property
-    def width(self):
-        return self._width
-    @width.setter
-    def width(self, width):
-        self._width = width
+def _get_data(h5file, data_type):
+    data_type_group = h5file[data_type]
 
-    @property
-    def height(self):
-        return self._height
-    @height.setter
-    def height(self, height):
-        self._height = height
+    element_data = {}
+    for label in data_type_group:
+        element_data[label] = data_type_group[label][...]
 
-    @property
-    def h5filepath(self):
-        return self._h5filepath
-    @h5filepath.setter
-    def h5filepath(self, h5filepath):
-        self._h5filepath = h5filepath
+    return element_data
+
+
+def show():
+    plt.show()
+
+
+def _read_data_from_image_file(file_name):
+    image = Image.open(file_name)
+    image_data = np.array(image)
+    return image_data
+
+
+def _read_data_from_tsv_file(file_path):
+    text = open(file_path, "rb").read()
+    lines = text.split(b'\r')
+    number_columns = len(lines[0].strip().split(b'\t'))
+    number_rows = len(lines) - 1
+    data = np.loadtxt(open(file_path, "r"))
+    print(number_columns, number_rows)
+    print(data.shape)
+    print(data.size)
+    data.shape = (number_rows, number_columns)
+    return data
+
+
+def _read_data_from_text_file(file_path):
+    data = np.loadtxt(open(file_path, "r"), delimiter=";")
+    return data
+
+
+def _read_data(file_path):
+    _basename, extension = os.path.splitext(file_path)
+    if extension == ".tif":
+        return _read_data_from_image_file(file_path)
+    elif extension == ".txt":
+        return _read_data_from_text_file(file_path)
+    elif extension == ".tsv":
+        return _read_data_from_tsv_file(file_path)
+
+    logging.error("Unknown extension %s for file_path %s", extension, file_path)
+
+
+def create_color_maps():
+    number_colors = 20
+
+    color_dict = {'red': ((0.0, 0.0, 0.0),
+                          (1.0, 0.0, 0.0)),
+                  'green': ((0.0, 0.0, 0.0),
+                            (1.0, 0.0, 0.0)),
+                  'blue': ((0.0, 0.0, 0.0),
+                           (1.0, 1.0, 1.0))}
+    plt.register_cmap(name='cmBlue', data=color_dict, lut=number_colors)
+
+    color_dict = {'red': ((0.0, 0.0, 0.0),
+                          (1.0, 0.0, 0.0)),
+                  'green': ((0.0, 0.0, 0.0),
+                            (1.0, 1.0, 1.0)),
+                  'blue': ((0.0, 0.0, 0.0),
+                           (1.0, 0.0, 0.0))}
+    plt.register_cmap(name='cmGreen', data=color_dict, lut=number_colors)
+
+    color_dict = {'red': ((0.0, 0.0, 0.0),
+                          (1.0, 1.0, 1.0)),
+                  'green': ((0.0, 0.0, 0.0),
+                            (1.0, 0.0, 0.0)),
+                  'blue': ((0.0, 0.0, 0.0),
+                           (1.0, 0.0, 0.0))}
+    plt.register_cmap(name='cmRed', data=color_dict, lut=number_colors)
+
+    color_dict = {'red': ((0.0, 0.0, 0.0),
+                          (1.0, 1.0, 1.0)),
+                  'green': ((0.0, 0.0, 0.0),
+                            (1.0, 0.0, 1.0)),
+                  'blue': ((0.0, 0.0, 0.0),
+                           (1.0, 1.0, 1.0))}
+    plt.register_cmap(name='cmPink', data=color_dict, lut=number_colors)

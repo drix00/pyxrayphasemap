@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-.. py:currentmodule:: xrayphasemap.map
+.. py:currentmodule:: map
    :synopsis: Map used in the phase analysis module.
    
 .. moduleauthor:: Hendrix Demers <hendrix.demers@mail.mcgill.ca>
