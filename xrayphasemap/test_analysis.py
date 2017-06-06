@@ -3,7 +3,6 @@
 
 """
 .. py:currentmodule:: test_analysis
-   :synopsis: Tests for the module :py:mod:`xrayphasemap.analysis`.
    
 .. moduleauthor:: Hendrix Demers <hendrix.demers@mail.mcgill.ca>
 

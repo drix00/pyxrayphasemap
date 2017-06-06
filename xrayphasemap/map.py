@@ -3,7 +3,6 @@
 
 """
 .. py:currentmodule:: map
-   :synopsis: Map used in the phase analysis module.
    
 .. moduleauthor:: Hendrix Demers <hendrix.demers@mail.mcgill.ca>
 
@@ -61,7 +60,7 @@ class PhaseMap(object):
     def add_phases(self, label, phases, color_name, union=True):
         self.phases[label] = (phases, color_name, union)
 
-    def display_map(self, label=None, gaussian_filter=False, legend=None, display_now=True):
+    def display_map(self, label=None, use_gaussian_filter=False, legend=None, display_now=True):
         image = self.get_image(label)
 
         plt.figure()
@@ -114,7 +113,7 @@ class PhaseMap(object):
     def show(self):
         plt.show()
 
-    def save_map(self, figures_path, label=None, gaussian_filter=False, legend=None):
+    def save_map(self, figures_path, label=None, use_gaussian_filter=False, legend=None):
         image = self.get_image(label)
 
         plt.figure()
@@ -185,7 +184,7 @@ class PhaseMap(object):
                 row.append(phase_fractions[phase_name])
                 writer.writerow(row)
 
-    def get_image(self, label=None, gaussian_filter=False):
+    def get_image(self, label=None, use_gaussian_filter=False):
         width = self.phase_analysis.width
         height = self.phase_analysis.height
         image_data = np.zeros((width, height, 3), dtype=np.float32)
@@ -203,7 +202,7 @@ class PhaseMap(object):
                 image_data += data
 
         image = Image.fromarray(np.uint8(image_data*255.0))
-        if gaussian_filter:
+        if use_gaussian_filter:
             image_filtered = gaussian_filter(image, sigma=(1, 1, 0), mode='nearest', order=0)
             image = Image.fromarray(image_filtered)
 
@@ -280,12 +279,12 @@ class PhaseMap(object):
         rgb = matplotlib.colors.hex2color(matplotlib.colors.cnames[name])
         return rgb
 
-    def save_image(self, file_path, gaussian_filter=False):
-        image = self.get_image(gaussian_filter)
+    def save_image(self, file_path, use_gaussian_filter=False):
+        image = self.get_image(use_gaussian_filter)
         image.save(file_path)
 
-    def show_image(self, file_path, gaussian_filter=False, legend=None, save_only=False):
-        image = self.get_image(gaussian_filter)
+    def show_image(self, file_path, use_gaussian_filter=False, legend=None, save_only=False):
+        image = self.get_image(use_gaussian_filter)
 
         plt.figure()
 
@@ -330,6 +329,17 @@ class PhaseMap(object):
 
 
 def save_phase_only(phase_map, phase, graphic_path, color):
+    """
+    Save an png image of one phase.
+    
+    .. todo:: Find why the parameter is phase_map, should we pass the width and height only?
+    
+    :param phase_map: get the width and height of the image 
+    :param phase: phase object to create a image 
+    :param graphic_path: path to save the image
+    :param color: color to use for the image
+
+    """
     phase_image = PhaseMap(phase_map.width, phase_map.height)
 
     phase_image.add_phase(phase, color)

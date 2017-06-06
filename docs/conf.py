@@ -108,8 +108,11 @@ pygments_style = 'sphinx'
 # documents.
 #keep_warnings = False
 
+# Extensions options.
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
+
+autoclass_content = 'both'
 
 # -- Options for HTML output -------------------------------------------
 

@@ -1,6 +1,16 @@
 xrayphasemap package
 ====================
 
+Module contents
+---------------
+
+.. automodule:: xrayphasemap.__init__
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    :special-members:
+    :private-members:
+
 Subpackages
 -----------
 
@@ -61,15 +71,6 @@ xrayphasemap.tests module
 -------------------------
 
 .. automodule:: xrayphasemap.tests
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: xrayphasemap
     :members:
     :undoc-members:
     :show-inheritance:

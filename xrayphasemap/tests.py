@@ -3,7 +3,6 @@
 
 """
 .. py:currentmodule:: tests
-   :synopsis: Regression testing for the project.
    
 .. moduleauthor:: Hendrix Demers <hendrix.demers@mail.mcgill.ca>
 

@@ -3,7 +3,6 @@
 
 """
 .. py:currentmodule:: xrayphasemap.analysis
-   :synopsis: Create phase map from x-ray map data.
    
 .. moduleauthor:: Hendrix Demers <hendrix.demers@mail.mcgill.ca>
 

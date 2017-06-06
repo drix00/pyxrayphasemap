@@ -10,8 +10,8 @@ Contents:
 
    readme
    installation
-   usage
    code
+   usage
    contributing
    authors
    history

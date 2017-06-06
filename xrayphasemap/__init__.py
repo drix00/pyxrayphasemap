@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-.. py:currentmodule:: __init__
-   :synopsis: Create phase map from x-ray elemental maps.
+.. py:currentmodule:: xrayphasemap.__init__
 
 .. moduleauthor:: Hendrix Demers <hendrix.demers@mail.mcgill.ca>
 
