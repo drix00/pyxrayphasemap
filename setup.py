@@ -26,7 +26,7 @@ Setup pyXRayPhaseMap project.
 import os
 
 # Third party modules.
-from setuptools import setup
+from setuptools import setup, find_packages
 
 # Local modules.
 
@@ -52,6 +52,8 @@ test_requirements = [
     'nose', 'coverage'
 ]
 
+packages = find_packages()
+
 setup(name="pyphasemap",
       version='0.3.0',
       description="Create phase map from x-ray elemental maps.",
@@ -59,9 +61,7 @@ setup(name="pyphasemap",
       author="Hendrix Demers",
       author_email="hendrix.demers@mail.mcgill.ca",
     url='https://github.com/drix00/xrayphasemap',
-    packages=[
-        'xrayphasemap',
-    ],
+    packages=packages,
     package_dir={'xrayphasemap':
                  'xrayphasemap'},
     include_package_data=True,
