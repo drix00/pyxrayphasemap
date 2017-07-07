@@ -3,7 +3,7 @@
 
 """
 .. py:currentmodule:: xrayphasemap.analysis
-   
+
 .. moduleauthor:: Hendrix Demers <hendrix.demers@mail.mcgill.ca>
 
 Create phase map from x-ray map data.
@@ -73,7 +73,7 @@ class PhaseAnalysis(object):
         self.width, self.height = self._read_project_file(data_type, label, file_path)
 
     def read_micrograph_data(self, micrograph_type, file_path):
-        data = self._read_data(file_path)
+        data = _read_data(file_path)
         logging.debug(np.min(data))
         logging.debug(np.max(data))
 
