@@ -147,7 +147,7 @@ class PhaseAnalysis(object):
             element_data = _get_data(h5file, data_type)
 
             data = element_data[label]
-            _figure = self._create_histogram_figure(data_type, label, data, num_bins)
+            _figure = self._create_histogram_figure(data_type, label, data, num_bins=num_bins)
 
             if display_now:
                 show()
@@ -157,7 +157,7 @@ class PhaseAnalysis(object):
             element_data = _get_data(h5file, data_type)
 
             data = element_data[label]
-            figure = self._create_histogram_figure(data_type, label, data, num_bins)
+            figure = self._create_histogram_figure(data_type, label, data, num_bins=num_bins)
 
             file_name = "Histogram_%s_%s.png" % (data_type, label)
             file_path = os.path.join(figure_path, file_name)
@@ -170,25 +170,25 @@ class PhaseAnalysis(object):
                 for dataTypeGroup in h5file:
                     for label in h5file[dataTypeGroup]:
                         data = h5file[dataTypeGroup][label][...]
-                        _figure = self._create_histogram_figure(dataTypeGroup, label, data, num_bins)
+                        _figure = self._create_histogram_figure(dataTypeGroup, label, data, num_bins=num_bins)
             else:
                 dataTypeGroup = h5file[data_type]
                 for label in dataTypeGroup:
                     data = dataTypeGroup[label][...]
-                    _figure = self._create_histogram_figure(data_type, label, data, num_bins)
+                    _figure = self._create_histogram_figure(data_type, label, data, num_bins=num_bins)
 
         if display_now:
             show()
 
-    def save_histogram_all(self, figure_path, data_type=None, num_bins=50, display_now=True):
+    def save_histogram_all(self, figure_path, data_type=None, num_bins=50, display_now=True, color_map_name='YlOrRd'):
         with h5py.File(self.h5file_path, 'r') as h5file:
             if data_type is None:
-                for data_type_group in h5file:
-                    for label in h5file[data_type_group]:
-                        data = h5file[data_type_group][label][...]
-                        figure = self._create_histogram_figure(data_type_group, label, data, num_bins)
+                for data_type in h5file:
+                    for label in h5file[data_type]:
+                        data = h5file[data_type][label][...]
+                        figure = self._create_histogram_figure(data_type, label, data, num_bins=num_bins, color_map_name=color_map_name)
 
-                        file_name = "Histogram_%s_%s.png" % (data_type_group, label)
+                        file_name = "Histogram_%s_%s.png" % (data_type, label)
                         file_path = os.path.join(figure_path, file_name)
                         figure.savefig(file_path)
                         plt.close()
@@ -196,28 +196,29 @@ class PhaseAnalysis(object):
                 data_type_group = h5file[data_type]
                 for label in data_type_group:
                     data = data_type_group[label][...]
-                    figure = self._create_histogram_figure(data_type, label, data, num_bins)
+                    figure = self._create_histogram_figure(data_type, label, data, num_bins=num_bins, color_map_name=color_map_name)
 
                     file_name = "Histogram_%s_%s.png" % (data_type, label)
                     file_path = os.path.join(figure_path, file_name)
                     figure.savefig(file_path)
                     plt.close()
 
-    def _create_histogram_figure(self, data_type, label, data, num_bins=50):
+    def _create_histogram_figure(self, data_type, label, data, num_bins=50, color_map_name='YlOrRd'):
         fig, (ax0, ax1) = plt.subplots(ncols=2, figsize=(8, 4))
 
         title = "%s %s" % (data_type, label)
         fig.suptitle(title)
 
         # This is  the colormap I'd like to use.
-        image = ax1.imshow(data, aspect='equal', cmap=self.cm)
+        color_map = plt.cm.get_cmap(color_map_name)
+        image = ax1.imshow(data, aspect='equal', cmap=color_map)
         ax1.axis('off')
         fig.colorbar(image)
 
         # Get the histogram
         Y, X = np.histogram(data, num_bins, normed=True)
         x_span = X.max() - X.min()
-        C = [self.cm(((x-X.min())/x_span)) for x in X]
+        C = [color_map(((x-X.min())/x_span)) for x in X]
 
         ax0.bar(X[1:-1], Y[1:], color=C, width=X[1]-X[0])
         # ax0.hist(data.flatten(), num_bins, normed=1, facecolor='green', alpha=0.5)
@@ -225,6 +226,44 @@ class PhaseAnalysis(object):
         ax0.set_ylabel('Probability')
 
         plt.subplots_adjust(wspace=0.2, top=0.85, bottom=0.15)
+
+        return fig
+
+    def save_map_all(self, figures_path, data_type=None, display_now=True, color_map_name='YlOrRd'):
+        with h5py.File(self.h5file_path, 'r') as h5file:
+            if data_type is None:
+                for data_type in h5file:
+                    for label in h5file[data_type]:
+                        data_type_group = h5file[data_type]
+                        data = data_type_group[label][...]
+                        figure = self._create_map_figure(data_type, label, data, color_map_name)
+
+                        file_name = "map_%s_%s.png" % (data_type, label)
+                        file_path = os.path.join(figures_path, file_name)
+                        figure.savefig(file_path)
+                        plt.close()
+            else:
+                data_type_group = h5file[data_type]
+                for label in data_type_group:
+                    data = data_type_group[label][...]
+                    figure = self._create_map_figure(data_type, label, data, color_map_name)
+
+                    file_name = "map_%s_%s.png" % (data_type_group, label)
+                    file_path = os.path.join(figures_path, file_name)
+                    figure.savefig(file_path)
+                    plt.close()
+
+    def _create_map_figure(self, data_type_group, label, data, color_map_name='YlOrRd'):
+        fig, ax0 = plt.subplots()
+
+        title = "%s %s" % (data_type_group, label)
+        fig.suptitle(title)
+
+        color_map = plt.cm.get_cmap(color_map_name)
+        # This is  the colormap I'd like to use.
+        image = ax0.imshow(data, aspect='equal', cmap=color_map)
+        ax0.axis('off')
+        fig.colorbar(image)
 
         return fig
 
