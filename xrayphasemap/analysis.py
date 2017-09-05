@@ -290,7 +290,7 @@ class PhaseAnalysis(object):
                 file_path = os.path.join(graphic_path, filename)
                 image.save(file_path)
 
-    def compute_fratio(self, input_data_type, weight_type=None):
+    def compute_fratio(self, input_data_type, weight_type=None, filter_size=0):
         if weight_type is not None:
             output_data_type = DATA_TYPE_FRATIO + weight_type
         else:
@@ -331,6 +331,10 @@ class PhaseAnalysis(object):
                 data = weight*element_data[label] / total_intensity
                 data[np.isnan(data)] = 0
                 logging.debug(np.max(data))
+
+                if filter_size > 0:
+                    data = ndimage.median_filter(data, size=filter_size)
+
                 dataset[:, :] = data
 
     def compute_total_peak_intensity(self, input_data_type):
