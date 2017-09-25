@@ -3,7 +3,7 @@
 
 """
 .. py:currentmodule:: map
-   
+
 .. moduleauthor:: Hendrix Demers <hendrix.demers@mail.mcgill.ca>
 
 Map used in the phase analysis module.
@@ -185,8 +185,7 @@ class PhaseMap(object):
                 writer.writerow(row)
 
     def get_image(self, label=None, use_gaussian_filter=False):
-        width = self.phase_analysis.width
-        height = self.phase_analysis.height
+        width, height = self.phase_analysis.get_width_height()
         image_data = np.zeros((width, height, 3), dtype=np.float32)
 
         if label is None:
@@ -210,8 +209,7 @@ class PhaseMap(object):
 
     def get_no_phase_image(self):
         color = (1, 1, 1)
-        width = self.phase_analysis.width
-        height = self.phase_analysis.height
+        width, height = self.phase_analysis.get_width_height()
         image_data = np.zeros((width, height, 3), dtype=np.float32)
         for label in self.phases:
             phases, _color_name, union = self.phases[label]
@@ -224,8 +222,7 @@ class PhaseMap(object):
 
     def get_overlap_phase_image(self):
         color = (1, 1, 1)
-        width = self.phase_analysis.width
-        height = self.phase_analysis.height
+        width, height = self.phase_analysis.get_width_height()
         image_data = np.zeros((width, height, 3), dtype=np.float32)
         for label in self.phases:
             phases, _color_name, union = self.phases[label]
@@ -331,11 +328,11 @@ class PhaseMap(object):
 def save_phase_only(phase_map, phase, graphic_path, color):
     """
     Save an png image of one phase.
-    
+
     .. todo:: Find why the parameter is phase_map, should we pass the width and height only?
-    
-    :param phase_map: get the width and height of the image 
-    :param phase: phase object to create a image 
+
+    :param phase_map: get the width and height of the image
+    :param phase: phase object to create a image
     :param graphic_path: path to save the image
     :param color: color to use for the image
 

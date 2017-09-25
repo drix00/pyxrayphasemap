@@ -56,6 +56,8 @@ DATA_TYPE_TOTAL_PEAK_INTENSITY = "Total peak intensity"
 
 GROUP_MICROGRAPH = "micrograph"
 
+IMAGE_WIDTH = "width"
+IMAGE_HEIGHT = "height"
 
 class PhaseAnalysis(object):
     def __init__(self, project_filepath):
@@ -66,11 +68,13 @@ class PhaseAnalysis(object):
         create_color_maps()
         self.cm = plt.cm.get_cmap('YlOrRd')
 
-        self.width = None
-        self.height = None
+    def get_width_height(self):
+        h5file = self._open_hdf5_file()
+        return h5file.attrs.get(IMAGE_WIDTH), h5file.attrs.get(IMAGE_HEIGHT)
 
     def read_element_data(self, data_type, label, file_path):
-        self.width, self.height = self._read_project_file(data_type, label, file_path)
+        self._read_project_file(data_type, label, file_path)
+
 
     def read_micrograph_data(self, micrograph_type, file_path):
         data = _read_data(file_path)
@@ -130,9 +134,11 @@ class PhaseAnalysis(object):
             element_data = np.array(dataset)
             w, h = element_data.shape
 
+        h5file.attrs[IMAGE_WIDTH] = w
+        h5file.attrs[IMAGE_HEIGHT] = h
+
         h5file.close()
 
-        return w, h
 
     def _open_hdf5_file(self):
         if self.overwrite:
@@ -224,6 +230,50 @@ class PhaseAnalysis(object):
         # ax0.hist(data.flatten(), num_bins, normed=1, facecolor='green', alpha=0.5)
         ax0.set_xlabel('Value')
         ax0.set_ylabel('Probability')
+
+        plt.subplots_adjust(wspace=0.2, top=0.85, bottom=0.15)
+
+        return fig
+
+    def display_scatter_diagram(self, data_type, label_a, label_b, num_bins=50, display_now=True):
+        with h5py.File(self.h5file_path, 'r') as h5file:
+            element_data = _get_data(h5file, data_type)
+
+            data_a = element_data[label_a]
+            data_b = element_data[label_b]
+            _figure = self._create_scatter_diagram(data_type, label_a, label_b, data_a, data_b, num_bins=num_bins)
+
+            if display_now:
+                show()
+
+    def _create_scatter_diagram(self, data_type, label_a, label_b, data_a, data_b, num_bins=50, color_map_name='YlOrRd'):
+        fig, (ax0, ax1) = plt.subplots(ncols=2, figsize=(8, 4))
+
+        label = "{}-{}".format(label_a, label_b)
+        title = "%s %s" % (data_type, label)
+        fig.suptitle(title)
+
+        # This is  the colormap I'd like to use.
+        x = data_a.flatten()
+        y = data_b.flatten()
+        minimum = 0.04
+        range = [[minimum, 1.0], [minimum, 1.0]]
+
+        color_map = plt.cm.get_cmap(color_map_name)
+        counts, xedges, yedges, image = ax1.hist2d(x, y, range=range, bins=num_bins, cmap=color_map)
+        fig.colorbar(image)
+        ax1.set_xlabel(label_a)
+        ax1.set_ylabel(label_b)
+
+        # Get the histogram
+        # Y, X = np.histogram(data, num_bins, normed=True)
+        # x_span = X.max() - X.min()
+        # C = [color_map(((x-X.min())/x_span)) for x in X]
+
+        ax0.plot(data_a.flatten(), data_b.flatten(), '.')
+        # ax0.hist(data.flatten(), num_bins, normed=1, facecolor='green', alpha=0.5)
+        ax0.set_xlabel(label_a)
+        ax0.set_ylabel(label_b)
 
         plt.subplots_adjust(wspace=0.2, top=0.85, bottom=0.15)
 
@@ -412,9 +462,10 @@ class PhaseAnalysis(object):
     def get_phase_data(self, phases, color, is_dilation_erosion=False, union=True):
         """
         """
-        rgb_R = np.zeros((self.width, self.height), dtype=np.float32)
-        rgb_G = np.zeros((self.width, self.height), dtype=np.float32)
-        rgb_B = np.zeros((self.width, self.height), dtype=np.float32)
+        width, height = self.get_width_height()
+        rgb_R = np.zeros((width, height), dtype=np.float32)
+        rgb_G = np.zeros((width, height), dtype=np.float32)
+        rgb_B = np.zeros((width, height), dtype=np.float32)
 
         compound_index = self.compute_compound_index(phases, is_dilation_erosion, union)
 
@@ -428,7 +479,8 @@ class PhaseAnalysis(object):
     def get_phase_fraction(self, phases, is_dilation_erosion=False, union=True):
         """
         """
-        total_number_pixels = self.width*self.height
+        width, height = self.get_width_height()
+        total_number_pixels = width*height
 
         compound_index = self.compute_compound_index(phases, is_dilation_erosion, union)
 
@@ -437,7 +489,8 @@ class PhaseAnalysis(object):
         return phase_fraction
 
     def compute_compound_index(self, phases, is_dilation_erosion, union):
-        compound_index = np.zeros((self.width, self.height), dtype='bool')
+        width, height = self.get_width_height()
+        compound_index = np.zeros((width, height), dtype='bool')
 
         try:
             phases[0]
@@ -464,7 +517,8 @@ class PhaseAnalysis(object):
         return compound_index
 
     def compute_phase_compound_index(self, phase):
-        compound_index = np.ones((self.width, self.height), dtype='bool')
+        width, height = self.get_width_height()
+        compound_index = np.ones((width, height), dtype='bool')
 
         for data_type, label in phase.conditions:
             data = self.get_data(data_type, label)

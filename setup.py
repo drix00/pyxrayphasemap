@@ -54,8 +54,8 @@ test_requirements = [
 
 packages = find_packages()
 
-setup(name="pyphasemap",
-      version='0.3.0',
+setup(name="xrayphasemap",
+      version='0.3.1',
       description="Create phase map from x-ray elemental maps.",
       long_description=readme + '\n\n' + history,
       author="Hendrix Demers",
