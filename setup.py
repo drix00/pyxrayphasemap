@@ -79,6 +79,6 @@ setup(name="xrayphasemap",
                    'Operating System :: OS Independent',
                    'Topic :: Scientific/Engineering'],
 
-    test_suite='tests',
+    test_suite='nose.collector',
     tests_require=test_requirements
       )
